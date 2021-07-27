@@ -1,0 +1,113 @@
+<?php 
+
+//pagination data Controller
+
+public function manage_users(){
+		 $meta['meta_title'] = 'Manage Users';
+		 
+		 $config = array(); 
+			$config["base_url"] = base_url() . "index.php/Usercontroller/manage_users/"; 
+			$config["total_rows"] = count($this->Frontend_model->manage_users_Data());//This controller is used to fetch table  data
+			$config["per_page"] = 5; 
+			$config["uri_segment"] = 3;
+			$config['reuse_query_string'] = true;
+			$config["use_page_numbers"] = TRUE;
+			$config["num_links"] = count($this->Frontend_model->manage_users_Data());
+
+
+
+			$config['full_tag_open'] = '<ul class="pagination">';
+			$config['full_tag_close'] = '</ul><!--pagination-->';
+			$config['first_link'] = '&laquo; First';
+			$config['first_tag_open'] = '<li class="prev page">';
+			$config['first_tag_close'] = '</li>';
+			$config['last_link'] = 'Last &raquo;';
+			$config['last_tag_open'] = '<li class="next page">';
+			$config['last_tag_close'] = '</li>';
+			$config['next_link'] = 'Next &rarr;';
+			$config['next_tag_open'] = '<li class="next page">';
+			$config['next_tag_close'] = '</li>';
+			$config['next_tag_close'] = '</li>';
+			$config['prev_link'] = '&larr; Previous';
+			$config['prev_tag_open'] = '<li class="prev page">';
+			$config['prev_tag_close'] = '</li>';
+			$config['cur_tag_open'] = '<li class="active">';
+			$config['cur_tag_close'] = '</a></li>';
+			$config['num_tag_open'] = '<li class="page">';
+			$config['num_tag_close'] = '</li>';
+			$config['anchor_class'] = 'follow_link'; 
+			$this->pagination->initialize($config); 
+			$page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+			
+			$data["users_data"] = $this->Page_model->fetch_data_records('users', $config["per_page"], $page); //users id table name
+			$data["links"] = $this->pagination->create_links();
+		 //$data['users_data'] = $this->Frontend_model->manage_users_Data();
+		 $this->load->view('includes/header_main',$meta);
+		 $this->load->view('admin/manage_users',$data);
+		 $this->load->view('includes/footer');
+	}
+	
+	
+//Pagination Model
+ public function fetch_data_records($tablename, $limit, $start) {		 
+			$this->load->database();
+			$start = ($start-1) * $limit;		
+			$this->db->limit($limit, $start);		
+			
+			$this->db->select('*');
+			$this->db->from($tablename);
+			//$this->db->orderby('created_date','DESC');
+			$query = $this->db->get();
+			$this->db->reset_query();
+			if ($query->num_rows() > 0) {
+				
+			   foreach ($query->result() as $row) { 
+				   $data[] = $row; 
+			   } 
+			   return $data; 
+			} 
+			return false;
+ 
+		}	
+	///Model for fetch data
+	public function manage_users_Data(){
+			 $this->load->database();
+			 $this->db->select('*');
+			 $this->db->from('users');
+			 $data = $this->db->get();
+			 return $data->result_array();
+	}
+	
+	<?php } ?>
+			if(isset($links) & !empty($links)){?>
+			<tr class="terms_row">
+				<td align="center" colspan="7" style="padding:20px 0 0 0;"><?php echo $links; ?></td>
+			</tr>
+			 <?php } ?>//Add this to view bottom to show pagination in view page
+	
+	
+	
+	
+//Send email using this first add library 
+$send_token['token'] = $message['token'];
+				$data['subject'] = 'Forgot Password on Areanaroom';
+				$body = $this->load->view('frontend/mail_template/forgot_template.php',$send_token,TRUE);
+				$this->email->from('hello@arenaroom.com', 'Areanaroom');
+				$this->email->to($email);
+				$this->email->subject('Forgot Password on Areanaroom');
+				$this->email->message($body);
+				$this->email->send();
+				
+				echo 'mailsend';	
+	
+//From date To date Filter query
+$sql="select pd.*,U.fname from `project_docs` pd,`users` U  where staff_id = '".$staff_id."' AND  `project_id` = '".$project_id."' AND pd.staff_id = U.id";
+if(isset($_POST['submit'])){
+	$dt1 = $_POST['Fromdate'].' 00:00:00';	
+	$dt2 = $_POST['Todate'].' 23:59:59';	
+	$sql.= " AND pd.`CreatedOn`  BETWEEN  '".$dt1."' AND '".$dt2."'"; 
+}
+$sql.= " order by `CreatedOn` desc";
+$responsearray=mysqli_query($link,$sql);	
+	
+	

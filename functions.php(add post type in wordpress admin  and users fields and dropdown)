@@ -1,0 +1,2455 @@
+<?php
+/**
+ * Twenty Seventeen functions and definitions
+ *
+ * @link https://developer.wordpress.org/themes/basics/theme-functions/
+ *
+ * @package WordPress
+ * @subpackage Twenty_Seventeen
+ * @since 1.0
+ */
+
+/**
+ * Twenty Seventeen only works in WordPress 4.7 or later.
+ */
+if ( version_compare( $GLOBALS['wp_version'], '4.7-alpha', '<' ) ) {
+	require get_template_directory() . '/inc/back-compat.php';
+	return;
+}
+
+/**
+ * Sets up theme defaults and registers support for various WordPress features.
+ *
+ * Note that this function is hooked into the after_setup_theme hook, which
+ * runs before the init hook. The init hook is too late for some features, such
+ * as indicating support for post thumbnails.
+ */
+function twentyseventeen_setup() {
+	/*
+	 * Make theme available for translation.
+	 * Translations can be filed at WordPress.org. See: https://translate.wordpress.org/projects/wp-themes/twentyseventeen
+	 * If you're building a theme based on Twenty Seventeen, use a find and replace
+	 * to change 'twentyseventeen' to the name of your theme in all the template files.
+	 */
+	load_theme_textdomain( 'twentyseventeen' );
+
+	// Add default posts and comments RSS feed links to head.
+	add_theme_support( 'automatic-feed-links' );
+
+	/*
+	 * Let WordPress manage the document title.
+	 * By adding theme support, we declare that this theme does not use a
+	 * hard-coded <title> tag in the document head, and expect WordPress to
+	 * provide it for us.
+	 */
+	add_theme_support( 'title-tag' );
+
+	/*
+	 * Enable support for Post Thumbnails on posts and pages.
+	 *
+	 * @link https://developer.wordpress.org/themes/functionality/featured-images-post-thumbnails/
+	 */
+	add_theme_support( 'post-thumbnails' );
+
+	add_image_size( 'twentyseventeen-featured-image', 2000, 1200, true );
+
+	add_image_size( 'twentyseventeen-thumbnail-avatar', 100, 100, true );
+
+	// Set the default content width.
+	$GLOBALS['content_width'] = 525;
+
+	// This theme uses wp_nav_menu() in two locations.
+	register_nav_menus( array(
+		'top'    => __( 'Top Menu', 'twentyseventeen' ),
+		'social' => __( 'Social Links Menu', 'twentyseventeen' ),
+	) );
+
+	/*
+	 * Switch default core markup for search form, comment form, and comments
+	 * to output valid HTML5.
+	 */
+	add_theme_support( 'html5', array(
+		'comment-form',
+		'comment-list',
+		'gallery',
+		'caption',
+	) );
+
+	/*
+	 * Enable support for Post Formats.
+	 *
+	 * See: https://codex.wordpress.org/Post_Formats
+	 */
+	add_theme_support( 'post-formats', array(
+		'aside',
+		'image',
+		'video',
+		'quote',
+		'link',
+		'gallery',
+		'audio',
+	) );
+
+	// Add theme support for Custom Logo.
+	add_theme_support( 'custom-logo', array(
+		'width'       => 250,
+		'height'      => 250,
+		'flex-width'  => true,
+	) );
+
+	// Add theme support for selective refresh for widgets.
+	add_theme_support( 'customize-selective-refresh-widgets' );
+
+	/*
+	 * This theme styles the visual editor to resemble the theme style,
+	 * specifically font, colors, and column width.
+ 	 */
+	add_editor_style( array( 'assets/css/editor-style.css', twentyseventeen_fonts_url() ) );
+
+	// Define and register starter content to showcase the theme on new sites.
+	$starter_content = array(
+		'widgets' => array(
+			// Place three core-defined widgets in the sidebar area.
+			'sidebar-1' => array(
+				'text_business_info',
+				'search',
+				'text_about',
+			),
+
+			// Add the core-defined business info widget to the footer 1 area.
+			'sidebar-2' => array(
+				'text_business_info',
+			),
+
+			// Put two core-defined widgets in the footer 2 area.
+			'sidebar-3' => array(
+				'text_about',
+				'search',
+			),
+		),
+
+		// Specify the core-defined pages to create and add custom thumbnails to some of them.
+		'posts' => array(
+			'home',
+			'about' => array(
+				'thumbnail' => '{{image-sandwich}}',
+			),
+			'contact' => array(
+				'thumbnail' => '{{image-espresso}}',
+			),
+			'blog' => array(
+				'thumbnail' => '{{image-coffee}}',
+			),
+			'homepage-section' => array(
+				'thumbnail' => '{{image-espresso}}',
+			),
+		),
+
+		// Create the custom image attachments used as post thumbnails for pages.
+		'attachments' => array(
+			'image-espresso' => array(
+				'post_title' => _x( 'Espresso', 'Theme starter content', 'twentyseventeen' ),
+				'file' => 'assets/images/espresso.jpg', // URL relative to the template directory.
+			),
+			'image-sandwich' => array(
+				'post_title' => _x( 'Sandwich', 'Theme starter content', 'twentyseventeen' ),
+				'file' => 'assets/images/sandwich.jpg',
+			),
+			'image-coffee' => array(
+				'post_title' => _x( 'Coffee', 'Theme starter content', 'twentyseventeen' ),
+				'file' => 'assets/images/coffee.jpg',
+			),
+		),
+
+		// Default to a static front page and assign the front and posts pages.
+		'options' => array(
+			'show_on_front' => 'page',
+			'page_on_front' => '{{home}}',
+			'page_for_posts' => '{{blog}}',
+		),
+
+		// Set the front page section theme mods to the IDs of the core-registered pages.
+		'theme_mods' => array(
+			'panel_1' => '{{homepage-section}}',
+			'panel_2' => '{{about}}',
+			'panel_3' => '{{blog}}',
+			'panel_4' => '{{contact}}',
+		),
+
+		// Set up nav menus for each of the two areas registered in the theme.
+		'nav_menus' => array(
+			// Assign a menu to the "top" location.
+			'top' => array(
+				'name' => __( 'Top Menu', 'twentyseventeen' ),
+				'items' => array(
+					'link_home', // Note that the core "home" page is actually a link in case a static front page is not used.
+					'page_about',
+					'page_blog',
+					'page_contact',
+				),
+			),
+
+			// Assign a menu to the "social" location.
+			'social' => array(
+				'name' => __( 'Social Links Menu', 'twentyseventeen' ),
+				'items' => array(
+					'link_yelp',
+					'link_facebook',
+					'link_twitter',
+					'link_instagram',
+					'link_email',
+				),
+			),
+		),
+	);
+
+	/**
+	 * Filters Twenty Seventeen array of starter content.
+	 *
+	 * @since Twenty Seventeen 1.1
+	 *
+	 * @param array $starter_content Array of starter content.
+	 */
+	$starter_content = apply_filters( 'twentyseventeen_starter_content', $starter_content );
+
+	add_theme_support( 'starter-content', $starter_content );
+}
+add_action( 'after_setup_theme', 'twentyseventeen_setup' );
+
+/**
+ * Set the content width in pixels, based on the theme's design and stylesheet.
+ *
+ * Priority 0 to make it available to lower priority callbacks.
+ *
+ * @global int $content_width
+ */
+function twentyseventeen_content_width() {
+
+	$content_width = $GLOBALS['content_width'];
+
+	// Get layout.
+	$page_layout = get_theme_mod( 'page_layout' );
+
+	// Check if layout is one column.
+	if ( 'one-column' === $page_layout ) {
+		if ( twentyseventeen_is_frontpage() ) {
+			$content_width = 644;
+		} elseif ( is_page() ) {
+			$content_width = 740;
+		}
+	}
+
+	// Check if is single post and there is no sidebar.
+	if ( is_single() && ! is_active_sidebar( 'sidebar-1' ) ) {
+		$content_width = 740;
+	}
+
+	/**
+	 * Filter Twenty Seventeen content width of the theme.
+	 *
+	 * @since Twenty Seventeen 1.0
+	 *
+	 * @param int $content_width Content width in pixels.
+	 */
+	$GLOBALS['content_width'] = apply_filters( 'twentyseventeen_content_width', $content_width );
+}
+add_action( 'template_redirect', 'twentyseventeen_content_width', 0 );
+
+/**
+ * Register custom fonts.
+ */
+function twentyseventeen_fonts_url() {
+	$fonts_url = '';
+
+	/*
+	 * Translators: If there are characters in your language that are not
+	 * supported by Libre Franklin, translate this to 'off'. Do not translate
+	 * into your own language.
+	 */
+	$libre_franklin = _x( 'on', 'Libre Franklin font: on or off', 'twentyseventeen' );
+
+	if ( 'off' !== $libre_franklin ) {
+		$font_families = array();
+
+		$font_families[] = 'Libre Franklin:300,300i,400,400i,600,600i,800,800i';
+
+		$query_args = array(
+			'family' => urlencode( implode( '|', $font_families ) ),
+			'subset' => urlencode( 'latin,latin-ext' ),
+		);
+
+		$fonts_url = add_query_arg( $query_args, 'https://fonts.googleapis.com/css' );
+	}
+
+	return esc_url_raw( $fonts_url );
+}
+
+/**
+ * Add preconnect for Google Fonts.
+ *
+ * @since Twenty Seventeen 1.0
+ *
+ * @param array  $urls           URLs to print for resource hints.
+ * @param string $relation_type  The relation type the URLs are printed.
+ * @return array $urls           URLs to print for resource hints.
+ */
+function twentyseventeen_resource_hints( $urls, $relation_type ) {
+	if ( wp_style_is( 'twentyseventeen-fonts', 'queue' ) && 'preconnect' === $relation_type ) {
+		$urls[] = array(
+			'href' => 'https://fonts.gstatic.com',
+			'crossorigin',
+		);
+	}
+
+	return $urls;
+}
+add_filter( 'wp_resource_hints', 'twentyseventeen_resource_hints', 10, 2 );
+
+/**
+ * Register widget area.
+ *
+ * @link https://developer.wordpress.org/themes/functionality/sidebars/#registering-a-sidebar
+ */
+function twentyseventeen_widgets_init() {
+	register_sidebar( array(
+		'name'          => __( 'Blog Sidebar', 'twentyseventeen' ),
+		'id'            => 'sidebar-1',
+		'description'   => __( 'Add widgets here to appear in your sidebar on blog posts and archive pages.', 'twentyseventeen' ),
+		'before_widget' => '<section id="%1$s" class="widget %2$s">',
+		'after_widget'  => '</section>',
+		'before_title'  => '<h2 class="widget-title">',
+		'after_title'   => '</h2>',
+	) );
+
+	register_sidebar( array(
+		'name'          => __( 'Footer 1', 'twentyseventeen' ),
+		'id'            => 'sidebar-2',
+		'description'   => __( 'Add widgets here to appear in your footer.', 'twentyseventeen' ),
+		'before_widget' => '<section id="%1$s" class="widget %2$s">',
+		'after_widget'  => '</section>',
+		'before_title'  => '<h2 class="widget-title">',
+		'after_title'   => '</h2>',
+	) );
+
+	register_sidebar( array(
+		'name'          => __( 'Footer 2', 'twentyseventeen' ),
+		'id'            => 'sidebar-3',
+		'description'   => __( 'Add widgets here to appear in your footer.', 'twentyseventeen' ),
+		'before_widget' => '<section id="%1$s" class="widget %2$s">',
+		'after_widget'  => '</section>',
+		'before_title'  => '<h2 class="widget-title">',
+		'after_title'   => '</h2>',
+	) );
+	
+	register_sidebar( array(
+		'name'          => __( 'Footer 3', 'twentyseventeen' ),
+		'id'            => 'sidebar-4',
+		'description'   => __( 'Add widgets here to appear in your footer.', 'twentyseventeen' ),
+		'before_widget' => '<section id="%1$s" class="widget %2$s">',
+		'after_widget'  => '</section>',
+		'before_title'  => '<h2 class="widget-title">',
+		'after_title'   => '</h2>',
+	) );
+	
+	register_sidebar( array(
+		'name'          => __( 'Footer 4', 'twentyseventeen' ),
+		'id'            => 'sidebar-5',
+		'description'   => __( 'Add widgets here to appear in your footer.', 'twentyseventeen' ),
+		'before_widget' => '<section id="%1$s" class="widget %2$s">',
+		'after_widget'  => '</section>',
+		'before_title'  => '<h2 class="widget-title">',
+		'after_title'   => '</h2>',
+	) );
+}
+add_action( 'widgets_init', 'twentyseventeen_widgets_init' );
+
+/**
+ * Replaces "[...]" (appended to automatically generated excerpts) with ... and
+ * a 'Continue reading' link.
+ *
+ * @since Twenty Seventeen 1.0
+ *
+ * @param string $link Link to single post/page.
+ * @return string 'Continue reading' link prepended with an ellipsis.
+ */
+function twentyseventeen_excerpt_more( $link ) {
+	if ( is_admin() ) {
+		return $link;
+	}
+
+	$link = sprintf( '<p class="link-more"><a href="%1$s" class="more-link">%2$s</a></p>',
+		esc_url( get_permalink( get_the_ID() ) ),
+		/* translators: %s: Name of current post */
+		sprintf( __( 'Continue reading<span class="screen-reader-text"> "%s"</span>', 'twentyseventeen' ), get_the_title( get_the_ID() ) )
+	);
+	return ' &hellip; ' . $link;
+}
+add_filter( 'excerpt_more', 'twentyseventeen_excerpt_more' );
+
+/**
+ * Handles JavaScript detection.
+ *
+ * Adds a `js` class to the root `<html>` element when JavaScript is detected.
+ *
+ * @since Twenty Seventeen 1.0
+ */
+function twentyseventeen_javascript_detection() {
+	echo "<script>(function(html){html.className = html.className.replace(/\bno-js\b/,'js')})(document.documentElement);</script>\n";
+}
+add_action( 'wp_head', 'twentyseventeen_javascript_detection', 0 );
+
+/**
+ * Add a pingback url auto-discovery header for singularly identifiable articles.
+ */
+function twentyseventeen_pingback_header() {
+	if ( is_singular() && pings_open() ) {
+		printf( '<link rel="pingback" href="%s">' . "\n", get_bloginfo( 'pingback_url' ) );
+	}
+}
+add_action( 'wp_head', 'twentyseventeen_pingback_header' );
+
+/**
+ * Display custom color CSS.
+ */
+function twentyseventeen_colors_css_wrap() {
+	if ( 'custom' !== get_theme_mod( 'colorscheme' ) && ! is_customize_preview() ) {
+		return;
+	}
+
+	require_once( get_parent_theme_file_path( '/inc/color-patterns.php' ) );
+	$hue = absint( get_theme_mod( 'colorscheme_hue', 250 ) );
+?>
+	<style type="text/css" id="custom-theme-colors" <?php if ( is_customize_preview() ) { echo 'data-hue="' . $hue . '"'; } ?>>
+		<?php echo twentyseventeen_custom_colors_css(); ?>
+	</style>
+<?php }
+add_action( 'wp_head', 'twentyseventeen_colors_css_wrap' );
+
+/**
+ * Enqueue scripts and styles.
+ */
+function twentyseventeen_scripts() {
+	// Add custom fonts, used in the main stylesheet.
+	wp_enqueue_style( 'twentyseventeen-fonts', twentyseventeen_fonts_url(), array(), null );
+
+	// Theme stylesheet.
+	wp_enqueue_style( 'twentyseventeen-style', get_stylesheet_uri() );
+
+	// Load the dark colorscheme.
+	if ( 'dark' === get_theme_mod( 'colorscheme', 'light' ) || is_customize_preview() ) {
+		wp_enqueue_style( 'twentyseventeen-colors-dark', get_theme_file_uri( '/assets/css/colors-dark.css' ), array( 'twentyseventeen-style' ), '1.0' );
+	}
+
+	// Load the Internet Explorer 9 specific stylesheet, to fix display issues in the Customizer.
+	if ( is_customize_preview() ) {
+		wp_enqueue_style( 'twentyseventeen-ie9', get_theme_file_uri( '/assets/css/ie9.css' ), array( 'twentyseventeen-style' ), '1.0' );
+		wp_style_add_data( 'twentyseventeen-ie9', 'conditional', 'IE 9' );
+	}
+
+	// Load the Internet Explorer 8 specific stylesheet.
+	wp_enqueue_style( 'twentyseventeen-ie8', get_theme_file_uri( '/assets/css/ie8.css' ), array( 'twentyseventeen-style' ), '1.0' );
+	wp_style_add_data( 'twentyseventeen-ie8', 'conditional', 'lt IE 9' );
+
+	// Load the html5 shiv.
+	wp_enqueue_script( 'html5', get_theme_file_uri( '/assets/js/html5.js' ), array(), '3.7.3' );
+	wp_script_add_data( 'html5', 'conditional', 'lt IE 9' );
+
+	wp_enqueue_script( 'twentyseventeen-skip-link-focus-fix', get_theme_file_uri( '/assets/js/skip-link-focus-fix.js' ), array(), '1.0', true );
+
+	$twentyseventeen_l10n = array(
+		'quote'          => twentyseventeen_get_svg( array( 'icon' => 'quote-right' ) ),
+	);
+
+	if ( has_nav_menu( 'top' ) ) {
+		wp_enqueue_script( 'twentyseventeen-navigation', get_theme_file_uri( '/assets/js/navigation.js' ), array( 'jquery' ), '1.0', true );
+		$twentyseventeen_l10n['expand']         = __( 'Expand child menu', 'twentyseventeen' );
+		$twentyseventeen_l10n['collapse']       = __( 'Collapse child menu', 'twentyseventeen' );
+		$twentyseventeen_l10n['icon']           = twentyseventeen_get_svg( array( 'icon' => 'angle-down', 'fallback' => true ) );
+	}
+
+	wp_enqueue_script( 'twentyseventeen-global', get_theme_file_uri( '/assets/js/global.js' ), array( 'jquery' ), '1.0', true );
+
+	wp_enqueue_script( 'jquery-scrollto', get_theme_file_uri( '/assets/js/jquery.scrollTo.js' ), array( 'jquery' ), '2.1.2', true );
+
+	wp_localize_script( 'twentyseventeen-skip-link-focus-fix', 'twentyseventeenScreenReaderText', $twentyseventeen_l10n );
+
+	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
+		wp_enqueue_script( 'comment-reply' );
+	}
+}
+add_action( 'wp_enqueue_scripts', 'twentyseventeen_scripts' );
+
+/**
+ * Add custom image sizes attribute to enhance responsive image functionality
+ * for content images.
+ *
+ * @since Twenty Seventeen 1.0
+ *
+ * @param string $sizes A source size value for use in a 'sizes' attribute.
+ * @param array  $size  Image size. Accepts an array of width and height
+ *                      values in pixels (in that order).
+ * @return string A source size value for use in a content image 'sizes' attribute.
+ */
+function twentyseventeen_content_image_sizes_attr( $sizes, $size ) {
+	$width = $size[0];
+
+	if ( 740 <= $width ) {
+		$sizes = '(max-width: 706px) 89vw, (max-width: 767px) 82vw, 740px';
+	}
+
+	if ( is_active_sidebar( 'sidebar-1' ) || is_archive() || is_search() || is_home() || is_page() ) {
+		if ( ! ( is_page() && 'one-column' === get_theme_mod( 'page_options' ) ) && 767 <= $width ) {
+			 $sizes = '(max-width: 767px) 89vw, (max-width: 1000px) 54vw, (max-width: 1071px) 543px, 580px';
+		}
+	}
+
+	return $sizes;
+}
+add_filter( 'wp_calculate_image_sizes', 'twentyseventeen_content_image_sizes_attr', 10, 2 );
+
+/**
+ * Filter the `sizes` value in the header image markup.
+ *
+ * @since Twenty Seventeen 1.0
+ *
+ * @param string $html   The HTML image tag markup being filtered.
+ * @param object $header The custom header object returned by 'get_custom_header()'.
+ * @param array  $attr   Array of the attributes for the image tag.
+ * @return string The filtered header image HTML.
+ */
+function twentyseventeen_header_image_tag( $html, $header, $attr ) {
+	if ( isset( $attr['sizes'] ) ) {
+		$html = str_replace( $attr['sizes'], '100vw', $html );
+	}
+	return $html;
+}
+add_filter( 'get_header_image_tag', 'twentyseventeen_header_image_tag', 10, 3 );
+
+/**
+ * Add custom image sizes attribute to enhance responsive image functionality
+ * for post thumbnails.
+ *
+ * @since Twenty Seventeen 1.0
+ *
+ * @param array $attr       Attributes for the image markup.
+ * @param int   $attachment Image attachment ID.
+ * @param array $size       Registered image size or flat array of height and width dimensions.
+ * @return string A source size value for use in a post thumbnail 'sizes' attribute.
+ */
+function twentyseventeen_post_thumbnail_sizes_attr( $attr, $attachment, $size ) {
+	if ( is_archive() || is_search() || is_home() ) {
+		$attr['sizes'] = '(max-width: 767px) 89vw, (max-width: 1000px) 54vw, (max-width: 1071px) 543px, 580px';
+	} else {
+		$attr['sizes'] = '100vw';
+	}
+
+	return $attr;
+}
+add_filter( 'wp_get_attachment_image_attributes', 'twentyseventeen_post_thumbnail_sizes_attr', 10, 3 );
+
+/**
+ * Use front-page.php when Front page displays is set to a static page.
+ *
+ * @since Twenty Seventeen 1.0
+ *
+ * @param string $template front-page.php.
+ *
+ * @return string The template to be used: blank if is_home() is true (defaults to index.php), else $template.
+ */
+function twentyseventeen_front_page_template( $template ) {
+	return is_home() ? '' : $template;
+}
+add_filter( 'frontpage_template',  'twentyseventeen_front_page_template' );
+
+/**
+ * Implement the Custom Header feature.
+ */
+require get_parent_theme_file_path( '/inc/custom-header.php' );
+
+/**
+ * Custom template tags for this theme.
+ */
+require get_parent_theme_file_path( '/inc/template-tags.php' );
+
+/**
+ * Additional features to allow styling of the templates.
+ */
+require get_parent_theme_file_path( '/inc/template-functions.php' );
+
+/**
+ * Customizer additions.
+ */
+require get_parent_theme_file_path( '/inc/customizer.php' );
+
+/**
+ * SVG icons functions and filters.
+ */
+require get_parent_theme_file_path( '/inc/icon-functions.php' );
+//Add custom user fields posts types for fields - Start
+add_action( 'init', 'create_userfields_types', 0 );
+function create_userfields_types() {
+    register_post_type( 'responsibilities',
+        array(
+            'labels' => array(
+                'name' => __( 'User Responsibilities' ),
+                'singular_name' => __( 'User Responsibilities' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'responsibilities'),
+            'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+        )
+    );    
+	register_post_type( 'Nationalities',
+        array(
+            'labels' => array(
+                'name' => __( 'User Nationalities' ),
+                'singular_name' => __( 'User Nationality' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'nationalities'),
+            'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+        )
+    );	
+	register_post_type( 'Religion',
+        array(
+            'labels' => array(
+                'name' => __( 'User Religions' ),
+                'singular_name' => __( 'User Religion' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'religions'),
+            'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+        )
+    );	
+	register_post_type( 'Marital Status',
+        array(
+            'labels' => array(
+                'name' => __( 'User Marital Status' ),
+                'singular_name' => __( 'User Marital Status' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'marital_status'),
+            'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+        )
+    );
+	register_post_type( 'Maid Type',
+        array(
+            'labels' => array(
+                'name' => __( 'Maid Type' ),
+                'singular_name' => __( 'Maid Type' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'maid_type'),
+            'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+        )
+    );
+	register_post_type( 'Add FAQ',
+			array(
+				'labels' => array(
+					'name' => __( 'Add FAQ' ),
+					'singular_name' => __( 'Add FAQ' )
+				),
+				'public' => true,
+				'has_archive' => true,
+				'rewrite' => array('slug' => 'add_faq'),
+				'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+			)
+		);		
+	register_post_type( 'Experience',
+        array(
+            'labels' => array(
+                'name' => __( 'User Experience' ),
+                'singular_name' => __( 'User Experience' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'user_experience'),
+            'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+        )
+    );	
+	register_post_type( 'Language Proficiency',
+        array(
+            'labels' => array(
+                'name' => __( 'User Language Proficiency' ),
+                'singular_name' => __( 'User Language Proficiency' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'language_roficiency'),
+            'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+        )
+    );	
+	register_post_type( 'Education Level',
+        array(
+            'labels' => array(
+                'name' => __( 'User Education Levels' ),
+                'singular_name' => __( 'User Education Level' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'education_level'),
+            'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+        )
+    );	
+	/*register_post_type( 'Maid Testimonials',
+        array(
+            'labels' => array(
+                'name' => __( 'Maid Testimonials' ),
+                'singular_name' => __( 'Maid Testimonial' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'maidtestimonials'),
+            'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+        )
+    );*/
+	register_post_type( 'custom_ads',
+        array(
+            'labels' => array(
+                'name' => __( 'Custom Ads' ),
+                'singular_name' => __( 'Custom Ad' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'custom_ads'),
+            'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+        )
+    );	
+	register_post_type( 'maid_applications',
+        array(
+            'labels' => array(
+                'name' => __( 'Maid Applications' ),
+                'singular_name' => __( 'Maid Application' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'maid_applications'),
+            'supports'=> array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' ),
+        )
+    );
+}
+//Add custom user fields posts types for fields - end
+//Add meta box for maid_testimonials - start
+/*
+function add_maid_testimonials_meta_box() {
+	add_meta_box('at_date_meta_box','Custom Fields','show_maid_testimonials_meta_box', array('maidtestimonials')	);
+}
+add_action( 'add_meta_boxes', 'add_maid_testimonials_meta_box' );
+
+function show_maid_testimonials_meta_box() {
+	global $post; 
+	$maidargs = array('fields'=>'all','role'=>'maid');$maids = get_users( $maidargs );
+	?>
+	<input type="hidden" name="at_maid_testimonials_nonce" value="<?php echo wp_create_nonce( basename(__FILE__) ); ?>">
+	Assigned to this maid ? : 
+	<select name="maid_assigned_to">
+		<option value="">--Select Maid--</option>
+		<?php foreach($maids as $maid){	?>
+				<option <?php if(esc_attr( get_post_meta( $post->ID, 'maid_assigned_to', true ) ) == $maid->ID){ echo 'selected'; } ?> value="<?php echo $maid->ID; ?>"><?php echo get_user_meta($maid->ID,'first_name',true); ?></option>
+		<?php } ?>
+	</select><br />
+	Is approved? :
+	<select name="is_approved">
+		<option value="">--Select Approval--</option>
+		<option <?php if(esc_attr( get_post_meta( $post->ID, 'is_approved', true ) ) == 'yes'){ echo 'selected'; } ?> value="yes"><?php echo 'Yes'; ?></option>
+		<option <?php if(esc_attr( get_post_meta( $post->ID, 'is_approved', true ) ) == 'no'){ echo 'selected'; } ?> value="yes"><?php echo 'No'; ?></option>
+	</select>
+<?php }
+
+function save_maid_testimonials_meta( $post_id ) {
+	// verify nonce
+	if ( !wp_verify_nonce( $_POST['at_maid_testimonials_nonce'], basename(__FILE__) ) ) {
+		return $post_id; 
+	}
+	if ( 'maidtestimonials' === $_POST['post_type'] ) {
+		if ( !current_user_can( 'edit_page', $post_id ) ) {
+			return $post_id;
+		} elseif ( !current_user_can( 'edit_post', $post_id ) ) { 
+			return $post_id;
+		}  
+	}
+	$maid_assigned_to = $_POST['maid_assigned_to'];
+	$is_approved = $_POST['is_approved'];
+
+	update_post_meta( $post_id, 'maid_assigned_to', $maid_assigned_to );
+	update_post_meta( $post_id, 'is_approved', $is_approved );
+}
+add_action( 'save_post', 'save_maid_testimonials_meta' );
+*/
+//Add meta box for maid_testimonials - end
+
+//Maid activation process - start
+function generateRandomString($length = 10) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
+}
+add_action( 'user_register', 'create_newUser_directory', 10, 1 );
+function create_newUser_directory( $user_id ) {
+	$random_key = generateRandomString(15);
+	update_user_meta($user_id, 'activation_key', '$$'.$user_id.'$$'.$random_key);	if(get_user_meta($user_id,'user_role',true) == 'maid'){
+		$activationLink = get_bloginfo('url').'/login/?activation='.'$$'.$user_id.'$$'.$random_key;
+		$user = get_user_by( 'id', $user_id );
+		$to = $user->user_email;
+		$mail_template = '<html><body><br />
+		Hello '.$user->user_login.',<br /><br />
+		Welcome to <a href="'.get_bloginfo("url").'">'.get_bloginfo("name").'</a><br /><br />
+		To confirm your email, please click the link below<br /><br />
+		<a href="'.$activationLink.'">Click here to activate your account</a><br /><br /></body></html>';
+		$subject  = 'Email Verification from Maid protal';
+		$headers  = 'MIME-Version: 1.0' . "\r\n";
+		$headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
+		if(wp_mail($to, $subject, $mail_template, $headers)){
+			update_user_meta($user_id, 'verificationEmail', 'yes'); 
+		}else{
+			update_user_meta($user_id, 'verificationEmail', 'no'); 
+		}	}
+}
+//Maid activation process - end
+
+//Redirects - start
+add_action ('wp_authenticate' , 'check_is_user_activate');
+function check_is_user_activate($username) {
+	global $wpdb;
+	
+	$userinfo = get_user_by('email', $username);
+	if(empty($userinfo))
+		$userinfo = get_user_by('login', $username);
+	$result = $wpdb->get_row("select * from ".$wpdb->users." where ID = ".$userinfo->ID);
+    if(!empty($result) && $result->user_status != 1){
+		$referrer = $_SERVER['HTTP_REFERER']; 
+		if ( !empty($referrer) && !strstr($referrer,'wp-login') && !strstr($referrer,'wp-admin') && !strstr($referrer,'portal_admin') ) {
+			wp_redirect( get_bloginfo('url'). '/login/?login=failed&activated=no' );
+			exit;
+		}
+	}
+}
+add_action( 'wp_login_failed', 'my_front_end_login_fail' );
+function my_front_end_login_fail( $username ) {
+   $referrer = $_SERVER['HTTP_REFERER'];
+   if ( !empty($referrer) && !strstr($referrer,'wp-login') && !strstr($referrer,'wp-admin') && !strstr($referrer,'portal_admin') ) {
+		wp_redirect( get_bloginfo('url'). '/login/?login=failed' );
+		exit;
+   }elseif(strstr($referrer,'portal_admin')){		$actual_link = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";		wp_redirect( $referrer.'?login=failed' );		exit;   }
+}
+//Redirects - end
+//Add fields for maid in admin - START
+add_action( 'show_user_profile', 'be_show_extra_profile_fields' );
+add_action( 'edit_user_profile', 'be_show_extra_profile_fields' );
+function be_show_extra_profile_fields( $user ) { 
+	$user_meta=get_userdata($user->ID);
+	$user_roles=$user_meta->roles; if($user_roles[0] == 'maid'){
+	?>
+    <h3>Extra Contact Information</h3>
+    <table class="form-table">
+        <tr>
+            <th>Marital Status</th>
+            <td>
+			<select name="marital_status">
+				<option value="">--Select Marital Status--</option>
+			<?php 
+				$args = array('posts_per_page'=> -1,'orderby'=> 'date','order'=> 'DESC','post_status'=> 'publish','post_type'=> 'maritalstatus');
+				$marital_statuses = get_posts($args);
+				foreach($marital_statuses as $marital_status){
+			?>
+				<option <?php if(esc_attr( get_the_author_meta( 'marital_status', $user->ID ) ) == $marital_status->ID){ echo 'selected'; } ?> value="<?php echo $marital_status->ID; ?>"><?php echo $marital_status->post_title; ?></option>
+			<?php } ?>
+			</select>
+			</td>
+        </tr> 
+		<tr>
+            <th>Date of Birth</th>
+            <td><input type="text" name="birth_date" id="datepicker_Admin" value="<?php echo esc_attr( get_the_author_meta( 'birth_date', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>
+		<tr>
+            <th>Place of Birth</th>
+            <td><input type="text" name="birth_place" id="birth_place" value="<?php echo esc_attr( get_the_author_meta( 'birth_place', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>
+		<tr>
+            <th>Number of Siblings</th>
+            <td><input type="number" name="no_of_siblings" id="no_of_siblings" value="<?php echo esc_attr( get_the_author_meta( 'no_of_siblings', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>
+		<tr>
+            <th>Number of Children</th>
+            <td><input type="number" name="no_of_children" id="no_of_children" value="<?php echo esc_attr( get_the_author_meta( 'no_of_children', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+			<th style="width:8%">Children Age</th>   
+			<td><input type="text" name="children_Age" id="children_Age" value="<?php echo esc_attr( get_the_author_meta( 'children_Age', $user->ID ) ); ?>" class="regular-text" /></td>
+        </tr>
+
+		<tr>
+            <th>Type</th>
+            <td>
+			<select name="maidtype">
+				<option value="">--Select Maid Type--</option>
+			<?php 
+				$args = array('posts_per_page'=> -1,'orderby'=> 'date','order'=> 'ASC','post_status'=> 'publish','post_type'=> 'maidtype');
+				$maidtypes = get_posts($args);
+				foreach($maidtypes as $maidtype){
+			?>
+				<option <?php if(esc_attr( get_the_author_meta( 'maidtype', $user->ID ) ) == $maidtype->ID){ echo 'selected'; } ?> value="<?php echo $maidtype->ID; ?>"><?php echo $maidtype->post_title; ?></option>
+			<?php } ?>
+			</select>
+			</td>
+        </tr> 
+		<tr>
+            <th>Ref. Code</th>
+            <td><input type="text" name="refcode" id="refcode" value="<?php echo esc_attr( get_the_author_meta( 'refcode', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>		
+		<tr>
+            <th>Permanent Address</th>
+            <td><input type="text" name="address" id="address" value="<?php echo esc_attr( get_the_author_meta( 'address', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>			
+		<tr>
+            <th>City</th>
+            <td><input type="text" name="city" id="city" value="<?php echo esc_attr( get_the_author_meta( 'city', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>			
+		<tr>
+            <th>State</th>
+            <td><input type="text" name="state" id="state" value="<?php echo esc_attr( get_the_author_meta( 'state', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>			
+		<tr>
+            <th>Zip</th>
+            <td><input type="text" name="zip" id="zip" value="<?php echo esc_attr( get_the_author_meta( 'zip', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>
+		<tr>
+            <th>Gender</th>
+			
+          <td>
+		 	<select name="gender">
+					<option value="">--Select Gender--</option>
+					<option <?php if( esc_attr( get_the_author_meta( 'gender', $user->ID ) ) == 'Male'){ echo 'selected'; } ?> value="Male">Male</option>
+					<option <?php if( esc_attr( get_the_author_meta( 'gender', $user->ID ) ) == 'Female'){ echo 'selected'; } ?> value="Female">Female</option> 
+				</select>
+				<br />
+			</td>
+        </tr>			
+		<tr>
+            <th>Phone Number</th>
+            <td><input type="text" name="phoneno" id="phoneno" value="<?php echo esc_attr( get_the_author_meta( 'phoneno', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>	
+	
+		<tr>
+            <th>Religion</th>
+			<td>
+			<select name="religion">
+				<option value="">--Select Religion--</option>
+			<?php 
+				$args = array('posts_per_page'=> -1,'orderby'=> 'date','order'=> 'DESC','post_status'=> 'publish','post_type'=> 'religion');
+				$religions = get_posts($args);
+				foreach($religions as $religion){
+			?>
+				<option <?php if(esc_attr( get_the_author_meta( 'religion', $user->ID ) ) == $religion->ID){ echo 'selected'; } ?> value="<?php echo $religion->ID; ?>"><?php echo $religion->post_title; ?></option>
+			<?php } ?>
+			</select>
+			</td>
+        </tr>
+		<tr>
+            <th>Nationality</th>
+			<td>
+			<select name="nationality">
+				<option value="">--Select Nationality--</option>
+			<?php 
+				$args = array('posts_per_page'=> -1,'orderby'=> 'date','order'=> 'DESC','post_status'=> 'publish','post_type'=> 'nationalities');
+				$nationalitys = get_posts($args);
+				foreach($nationalitys as $nationality){
+			?>
+				<option <?php if(esc_attr( get_the_author_meta( 'nationality', $user->ID ) ) == $nationality->ID){ echo 'selected'; } ?> value="<?php echo $nationality->ID; ?>"><?php echo $nationality->post_title; ?></option>
+			<?php } ?>
+			</select>
+			</td>
+        </tr>		
+		<tr>
+            <th>Age</th>
+            <td><input type="text" name="age" id="age" value="<?php echo esc_attr( get_the_author_meta( 'age', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>		
+		<tr>
+            <th>Responsibilities</th>
+            <td>
+				<?php $responsibilities_saved = get_user_meta( $user->ID, 'responsibilities', true ); ?>
+				<select name="responsibilities[]" multiple>
+					<option value="">--Select Responsibility--</option>
+					<?php 
+						$args = array('posts_per_page'=> -1,'orderby'=> 'date','order'=> 'DESC','post_status'=> 'publish','post_type'=> 'responsibilities');
+						$responsibilities = get_posts($args);
+						foreach($responsibilities as $responsibility){
+					?>
+						<option <?php if(@in_array($responsibility->ID,$responsibilities_saved)){ echo 'selected'; } ?> value="<?php echo $responsibility->ID; ?>"><?php echo $responsibility->post_title; ?></option>
+					<?php } ?>
+					</select>
+				<br />
+			</td>
+        </tr>
+		<tr>
+            <th>Experience</th>
+            <td>
+				<?php $experiences_saved = get_user_meta( $user->ID, 'experiences', true ); ?>
+				<select name="experiences[]" multiple>
+					<option value="">--Select Experience--</option>
+					<?php 
+						$args = array('posts_per_page'=> -1,'orderby'=> 'date','order'=> 'DESC','post_status'=> 'publish','post_type'=> 'experience');
+						$experiences = get_posts($args);
+						foreach($experiences as $experience){
+					?>
+						<option <?php if(@in_array($experience->ID,$experiences_saved)){ echo 'selected'; } ?> value="<?php echo $experience->ID; ?>"><?php echo $experience->post_title; ?></option>
+					<?php } ?>
+					</select>
+				<br />
+			</td>
+        </tr>
+		<tr>
+            <th>Language Proficiency</th>
+            <td>
+				<?php $languageproficiencys_saved = get_user_meta( $user->ID, 'languageproficiencies', true ); ?>
+				<select name="languageproficiencies[]" multiple>
+					<option value="">--Select Language Proficiency--</option>
+					<?php 
+						$args = array('posts_per_page'=> -1,'orderby'=> 'date','order'=> 'DESC','post_status'=> 'publish','post_type'=> 'languageproficiency');
+						$languageproficiencys = get_posts($args);
+						foreach($languageproficiencys as $languageproficiency){
+					?>
+						<option <?php if(@in_array($languageproficiency->ID,$languageproficiencys_saved)){ echo 'selected'; } ?> value="<?php echo $languageproficiency->ID; ?>"><?php echo $languageproficiency->post_title; ?></option>
+					<?php } ?>
+					</select>
+				<br />
+			</td>
+        </tr>
+		<tr>
+            <th>Education Level</th>
+            <td>
+				<select name="educationlevels">
+					<option value="">--Select Education Level--</option>
+					<?php 
+						$args = array('posts_per_page'=> -1,'orderby'=> 'date','order'=> 'DESC','post_status'=> 'publish','post_type'=> 'educationlevel');
+						$educationlevels = get_posts($args);
+						foreach($educationlevels as $educationlevel){
+					?>
+						<option <?php if(esc_attr( get_the_author_meta( 'educationlevels', $user->ID ) ) == $educationlevel->ID){ echo 'selected'; } ?> value="<?php echo $educationlevel->ID; ?>"><?php echo $educationlevel->post_title; ?></option>
+					<?php } ?>
+					</select>
+				<br />
+			</td>
+        </tr>
+		<tr>
+            <th>Education Info</th>
+            <td><input type="text" name="education_info" id="education_info" value="<?php echo esc_attr( get_the_author_meta( 'education_info', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>
+		<tr>
+            <th>Height</th>
+            <td><input type="text" name="height" id="height" value="<?php echo esc_attr( get_the_author_meta( 'height', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>
+		<tr>
+            <th>Weight</th>
+            <td><input type="text" name="weight" id="weight" value="<?php echo esc_attr( get_the_author_meta( 'weight', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+        </tr>
+		<tr>
+		<tr>
+            <th>Base Salary (S$)</th>
+            <td><input type="text" name="base_salary" id="base_salary" value="<?php echo esc_attr( get_the_author_meta( 'base_salary', $user->ID ) ); ?>" class="regular-text" /><span>With weekly rest days</span><br /></td>
+        </tr>
+		<tr>
+            <th>Preference for rest day</th>
+            <td>
+				<select name="rest_day_preference">
+					<option value="">--Select Is Preference Days --</option>
+					<option <?php if(esc_attr( get_the_author_meta( 'rest_day_preference', $user->ID ) ) == '4'){ echo 'selected'; } ?> value="4">4</option>
+					<option <?php if(esc_attr( get_the_author_meta( 'rest_day_preference', $user->ID ) ) == 'weekly'){ echo 'selected'; } ?> value="weekly">weekly</option> 
+				</select>
+				<br />
+			</td>
+        </tr>
+		<tr>
+            <th>Agency</th>
+            <td>
+				<?php $portalargs = array('fields'=>'all','role'=>'portal');$portals = get_users( $portalargs ); ?>
+				<select name="maid_added_by">
+					<option value="">--Select Agency--</option>
+					<?php foreach($portals as $portal){	?>
+						<option <?php if(esc_attr( get_the_author_meta( 'maid_added_by', $user->ID ) ) == $portal->ID){ echo 'selected'; } ?> value="<?php echo $portal->ID; ?>"><?php echo get_user_meta($portal->ID,'first_name',true); ?></option>
+					<?php } ?>
+					</select>
+				<br />
+			</td>
+        </tr>
+		<tr>
+            <th>Maid Status</th>
+            <td>
+				<select name="maid_status">
+					<option value="">--Select Maid Status--</option>
+					<option <?php if(esc_attr( get_the_author_meta( 'maid_status', $user->ID ) ) == 'unemployed'){ echo 'selected'; } ?> value="unemployed">Unemployed</option>
+					<option <?php if(esc_attr( get_the_author_meta( 'maid_status', $user->ID ) ) == 'employed'){ echo 'selected'; } ?> value="employed">Employed</option> 
+					<option <?php if(esc_attr( get_the_author_meta( 'maid_status', $user->ID ) ) == 'reserved'){ echo 'selected'; } ?> value="reserved">Reserved</option> 
+					<option <?php if(esc_attr( get_the_author_meta( 'maid_status', $user->ID ) ) == 'booked'){ echo 'selected'; } ?> value="booked">Booked</option> 
+					<option <?php if(esc_attr( get_the_author_meta( 'maid_status', $user->ID ) ) == 'repatriated'){ echo 'selected'; } ?> value="repatriated">Repatriated</option> 
+				</select>
+				<br />
+			</td>
+        </tr>
+		<tr>
+            <th>Is Featured</th>
+            <td>
+				<select name="is_featured">
+					<option value="">--Select Is Featured--</option>
+					<option <?php if(esc_attr( get_the_author_meta( 'is_featured', $user->ID ) ) == 'yes'){ echo 'selected'; } ?> value="yes">Yes</option>
+					<option <?php if(esc_attr( get_the_author_meta( 'is_featured', $user->ID ) ) == 'no'){ echo 'selected'; } ?> value="no">No</option> 
+				</select>
+				<br />
+			</td>
+        </tr>
+		<tr>
+            <th>Is Publish</th>
+            <td>
+				<select name="is_publish">
+					<option value="">--Select Is Publish--</option>
+					<option <?php if(esc_attr( get_the_author_meta( 'is_publish', $user->ID ) ) == 'yes'){ echo 'selected'; } ?> value="yes">Yes</option>
+					<option <?php if(esc_attr( get_the_author_meta( 'is_publish', $user->ID ) ) == 'no'){ echo 'selected'; } ?> value="no">No</option> 
+					<option <?php if(esc_attr( get_the_author_meta( 'is_publish', $user->ID ) ) == 'private'){ echo 'selected'; } ?> value="private">Private</option> 
+					<option <?php if(esc_attr( get_the_author_meta( 'is_publish', $user->ID ) ) == 'exclusive'){ echo 'selected'; } ?> value="exclusive">Exclusive</option> 
+					<option <?php if(esc_attr( get_the_author_meta( 'is_publish', $user->ID ) ) == 'pre-created'){ echo 'selected'; } ?> value="pre-created">Pre-created</option> 
+					<option <?php if(esc_attr( get_the_author_meta( 'is_publish', $user->ID ) ) == 'blacklisted'){ echo 'selected'; } ?> value="blacklisted">Blacklisted</option> 
+				</select>
+				<br />
+			</td>
+        </tr>
+    </table>
+	 <fieldset>
+		<legend>Private Data (Insternal Use)</legend>
+		<table class="form-table">
+			<tr>
+				<th>Passport Number</th>
+				<td><input type="text" name="passport_num" id="passport_num" value="<?php echo esc_attr( get_the_author_meta( 'passport_num', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+			</tr>
+			<tr>
+				<th>Passport Expiry</th>
+				<td><input type="text" name="passport_expiry" id="passport_expiry" value="<?php echo esc_attr( get_the_author_meta( 'passport_expiry', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+			</tr>
+			<tr>
+				<th>Work Permit Number</th>
+				<td><input type="text" name="work_permit_num" id="work_permit_num" value="<?php echo esc_attr( get_the_author_meta( 'work_permit_num', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+			</tr>
+			<tr>
+				<th>Work Permit Expiry</th>
+				<td><input type="text" name="work_permit_expiry" id="work_permit_expiry" value="<?php echo esc_attr( get_the_author_meta( 'work_permit_expiry', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+			</tr>
+		</table>
+	</fieldset>
+	<table class="form-table">
+			<tr>
+				<th>Home Address</th>
+				<td><textarea col="15" rows="5" name="home_Address" id="home_Address" class="regular-text"><?php echo esc_attr( get_the_author_meta( 'home_Address', $user->ID ) ); ?></textarea><br /></td>
+			</tr>
+			<tr>
+				<th>Home Number</th>
+				<td><input type="text" name="home_number" id="home_number" value="<?php echo esc_attr( get_the_author_meta( 'home_number', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+			</tr>
+			<tr>
+				<th>Home Contacts</th>
+				<td><input type="text" name="home_contacts" id="home_contacts" value="<?php echo esc_attr( get_the_author_meta( 'home_contacts', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+			</tr>
+			<tr>
+				<th>Repatriate (Air)Port</th>
+				<td><input type="text" name="repatriate_air_port" id="repatriate_air_port" value="<?php echo esc_attr( get_the_author_meta( 'repatriate_air_port', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+			</tr>
+	</table>
+ <fieldset>
+		<legend>Availability of FDW To Be Interviewed By Prospective Employer</legend>
+		<table class="form-table">
+		<?php 
+			$data = get_user_meta($user->ID, 'availability_FDW',true);
+			$data1 = unserialize($data);
+			// $FDW_data=$data[0];
+			// print_r($data1);
+		?>	
+		<tr>
+		  <td>
+		    <input type="checkbox" id="fdw_not_available" size="80" name="availability_FDW[]"  value="FDW is not available for interview" <?php if(in_array('FDW is not available for interview',$data1)  ){echo "checked";} ?> >FDW is not available for interview
+		  </td>
+		</tr>  
+         <tr>
+		  <td>
+		    <input type="checkbox" id="fdw_interview_by_phone" size="80" name="availability_FDW[]"  value="FDW can be interviewed by phone" <?php if(in_array('FDW can be interviewed by phone',$data1)  ){echo "checked";} ?> >FDW can be interviewed by phone
+		  </td>
+		</tr>
+        <tr>
+		  <td>
+		    <input type="checkbox" id="fdw_interview_by_video_conference" size="80" name="availability_FDW[]"  value="FDW can be interviewed by video-conference" <?php if(in_array('FDW can be interviewed by video-conference',$data1)  ){echo "checked";} ?> >FDW can be interviewed by video-conference
+		  </td>
+		</tr> 
+		<tr>
+		  <td>
+		    <input type="checkbox" id="fdw_interview_in_person" size="80" name="availability_FDW[]"  value="FDW can be interviewed in person" <?php if(in_array('FDW can be interviewed in person',$data1)  ){echo "checked";} ?> >FDW can be interviewed in person
+		  </td>
+		</tr> 	
+		</table>
+</fieldset>	
+<fieldset>
+<legend>Method of Evaluation of Skills</legend>
+		<table class="form-table">
+		<?php 
+			$data_skill = get_user_meta($user->ID, 'evaluation_skill',true);
+			$data2 = unserialize($data_skill);
+			// $FDW_data=$data[0];
+			// print_r($data1);
+		?>	
+		<tr>
+		  <td>
+		    <input type="checkbox" id="based_on_evaluation_skill" size="80" name="evaluation_skill[]"  value="Based on FDW declaration no evaluation/observation by Singapore EA or overseas training center/EA" <?php if(in_array("Based on FDW declaration no evaluation/observation by Singapore EA or overseas training center/EA",$data2)  ){echo "checked";} ?> >Based on FDW's declaration, no evaluation/observation by Singapore EA or overseas training center/EA
+		  </td>
+		</tr>
+		<tr>
+		  <td>
+		    <input type="checkbox" id="interviewed_by_sa_EA" size="80" name="evaluation_skill[]"  value="Interviewed by Singapore EA" <?php if(in_array("Interviewed by Singapore EA",$data2)  ){echo "checked";} ?> >Interviewed by Singapore EA
+		  </td>
+		</tr>
+		<tr>
+		  <td>
+		    <input type="checkbox" id="interviewed_via_telephone" size="80" name="evaluation_skill[]"  value="Interviewed via telephone/teleconference" <?php if(in_array("Interviewed via telephone/teleconference",$data2)  ){echo "checked";} ?> >Interviewed via telephone/teleconference
+		  </td>
+		</tr> 
+        <tr>
+		  <td>
+		    <input type="checkbox" id="interviewed_via_videoconference" size="80" name="evaluation_skill[]"  value="Interviewed via videoconference" <?php if(in_array("Interviewed via videoconference",$data2)  ){echo "checked";} ?> >Interviewed via videoconference
+		  </td>
+		</tr>
+        <tr>
+		  <td>
+		    <input type="checkbox" id="interviewed_via_person" size="80" name="evaluation_skill[]"  value="Interviewed in person" <?php if(in_array("Interviewed in person",$data2)  ){echo "checked";} ?> >Interviewed in person
+		  </td>
+		</tr>
+		<tr>
+		  <td>
+		    <input type="checkbox" id="interviewed_by_person_observation" size="80" name="evaluation_skill[]"  value="Interviewed in person and also made observation of FDW in the areas of work listed in table" <?php if(in_array("Interviewed in person and also made observation of FDW in the areas of work listed in table",$data2)  ){echo "checked";} ?> >Interviewed in person and also made observation of FDW in the areas of work listed in table
+		  </td>
+		</tr>
+		<tr>
+		  <td>
+		    <input type="checkbox" id="interviewed_by_overseas_traning_center" size="80" name="evaluation_skill[]"  value="Interviewed by overseas training center/EA" <?php if(in_array("Interviewed by overseas training center/EA",$data2)  ){echo "checked";} ?> >Interviewed by overseas training center/EA table
+		  </td>
+		</tr>
+		
+</table>
+		
+</fieldset>	
+<fieldset>
+<legend>Other Info</legend>
+		<table class="form-table">
+		<tr>
+			<td style="width: 32%;">Able to handle pork? </td>
+			<td>
+			<?php 
+				$data_handle_pork = get_user_meta($user->ID, 'able_to_handle_pork',true);
+				$frst_rado = unserialize($data_handle_pork);
+			 if($frst_rado[0] == 'yes'){
+			 ?>
+			 <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+			 <?php }else if($frst_rado[0] == 'no'){ ?>
+			<img src="<?php bloginfo('template_url'); ?>/images/cross.png">
+			 <?php } else { ?>
+			  <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+			 <?php } ?>
+			</td>
+			<td>
+		
+			<input type="radio" name="able_to_handle_pork[]" value="yes" <?php if(in_array("yes",$frst_rado)  ){echo "checked";} ?> class="df1">Yes
+			<input type="radio" name="able_to_handle_pork[]" value="no" <?php if(in_array("no",$frst_rado)  ){echo "checked";} ?> class="df1">No<br> </td>
+		
+		</tr>
+		<tr>
+			<td style="width: 32%;">Able to eat pork?</td>
+			<td>
+			<?php 
+				$data_eat_pork = get_user_meta($user->ID, 'able_to_eat_pork',true);
+				$sec_rado = unserialize($data_eat_pork);
+			if($sec_rado[0] == 'yes'){
+			 ?>
+			 <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+			 <?php }else if($sec_rado[0] == 'no'){ ?>
+			<img src="<?php bloginfo('template_url'); ?>/images/cross.png">
+			 <?php } else { ?>
+			  <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+			 <?php } ?>
+			</td>
+			<td>
+			
+			<input type="radio" name="able_to_eat_pork[]" value="yes" <?php if(in_array("yes",$sec_rado)  ){echo "checked";} ?> >Yes
+			<input type="radio" name="able_to_eat_pork[]" value="no" <?php if(in_array("no",$sec_rado)  ){echo "checked";} ?> >No<br> </td>
+		
+		</tr>
+		<tr>
+			<td style="width: 32%;">Able to handle beef?</td>
+			<td>
+			<?php 
+				$data_handle_beef = get_user_meta($user->ID, 'able_to_handle_beef',true);
+				$sec_rado1 = unserialize($data_handle_beef);
+				if($sec_rado1[0] == 'yes'){
+				 ?>
+				 <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php }else if($sec_rado1[0] == 'no'){ ?>
+				<img src="<?php bloginfo('template_url'); ?>/images/cross.png">
+				 <?php } else { ?>
+				  <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php } ?>
+			</td>
+		
+			<td>
+			<input type="radio" name="able_to_handle_beef[]" value="yes" <?php if(in_array("yes",$sec_rado1)  ){echo "checked";} ?> >Yes
+			<input type="radio" name="able_to_handle_beef[]" value="no" <?php if(in_array("no",$sec_rado1)  ){echo "checked";} ?> >No<br> </td>
+		
+		</tr>
+		<tr>
+			<td style="width: 32%;">Able to do simple sewing?</td>
+			<td>
+			<?php 
+				$data_able_to_do_simple_sewing = get_user_meta($user->ID, 'able_to_do_simple_sewing',true);
+				$sec_rado12 = unserialize($data_able_to_do_simple_sewing);
+				if($sec_rado12[0] == 'yes'){
+				 ?>
+				 <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php }else if($sec_rado12[0] == 'no'){ ?>
+				<img src="<?php bloginfo('template_url'); ?>/images/cross.png">
+				 <?php } else { ?>
+				  <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php } ?>
+			</td>
+		
+			<td>
+			<input type="radio" name="able_to_do_simple_sewing[]" value="yes" <?php if(in_array("yes",$sec_rado12)  ){echo "checked";} ?> >Yes
+			<input type="radio" name="able_to_do_simple_sewing[]" value="no" <?php if(in_array("no",$sec_rado12)  ){echo "checked";} ?> >No<br> </td>
+		
+		</tr>
+		<tr>
+			<td style="width: 32%;">Able to care dog/cat?</td>
+			<td>
+			<?php 
+				$data_care_dog_cat = get_user_meta($user->ID, 'able_to_care_dog_cat',true);
+				$thrd_rado = unserialize($data_care_dog_cat);
+				if($thrd_rado[0] == 'yes'){
+				 ?>
+				 <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php }else if($thrd_rado[0] == 'no'){ ?>
+				<img src="<?php bloginfo('template_url'); ?>/images/cross.png">
+				 <?php } else { ?>
+				  <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php } ?>
+
+			</td>
+		
+			<td>
+			<input type="radio" name="able_to_care_dog_cat[]" value="yes" <?php if(in_array("yes",$thrd_rado)  ){echo "checked";} ?> >Yes
+			<input type="radio" name="able_to_care_dog_cat[]" value="no" <?php if(in_array("no",$thrd_rado)  ){echo "checked";} ?> >No<br> </td>
+		
+		</tr>
+		<tr>
+			<td style="width: 32%;">Able to do gardening work?</td>
+			<td>
+			<?php 
+				$data_care_gardening_work = get_user_meta($user->ID, 'able_to_care_gardening_work',true);
+				$forth_rado = unserialize($data_care_gardening_work);
+			 if($forth_rado[0] == 'yes'){
+				 ?>
+				 <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php }else if($forth_rado[0] == 'no'){ ?>
+				<img src="<?php bloginfo('template_url'); ?>/images/cross.png">
+				 <?php } else { ?>
+				  <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php } ?>
+			</td>
+		
+			<td>
+			<input type="radio" name="able_to_care_gardening_work[]" value="yes" <?php if(in_array("yes",$forth_rado)  ){echo "checked";} ?> >Yes
+			<input type="radio" name="able_to_care_gardening_work[]" value="no" <?php if(in_array("no",$forth_rado)  ){echo "checked";} ?> >No<br> </td>
+		
+		</tr>
+		<tr>
+			<td style="width: 32%;">Willing to wash car?</td>
+			 <td>
+			 <?php 
+				$data_care_gardening_work = get_user_meta($user->ID, 'willing_car_wash',true);
+				$fifth_rado = unserialize($data_care_gardening_work);
+			 if($fifth_rado[0] == 'yes'){
+				 ?>
+				 <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php }else if($fifth_rado[0] == 'no'){ ?>
+				<img src="<?php bloginfo('template_url'); ?>/images/cross.png">
+				 <?php } else { ?>
+				  <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php } ?>
+			 </td>
+		
+			 <td>
+			<input type="radio" name="willing_car_wash[]" value="yes" <?php if(in_array("yes",$fifth_rado)  ){echo "checked";} ?> >Yes
+			<input type="radio" name="willing_car_wash[]" value="no" <?php if(in_array("no",$fifth_rado)  ){echo "checked";} ?> >No<br> </td>
+		
+		</tr>
+		<tr>
+			<td style="width: 32%;">Willing to work on off days with compensation?</td>
+			<td>
+			 <?php 
+				$data_work_on_off_days = get_user_meta($user->ID, 'willing_to_work_on_off_days',true);
+				$six_rado = unserialize($data_work_on_off_days);
+			 if($six_rado[0] == 'yes'){
+				 ?>
+				 <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php }else if($six_rado[0] == 'no'){ ?>
+				<img src="<?php bloginfo('template_url'); ?>/images/cross.png">
+				 <?php } else { ?>
+				  <img src="<?php bloginfo('template_url'); ?>/images/tick.png">
+				 <?php } ?>
+			</td>
+			
+			<td>
+			<input type="radio" name="willing_to_work_on_off_days[]" value="yes" <?php if(in_array("yes",$six_rado)  ){echo "checked";} ?> >Yes
+			<input type="radio" name="willing_to_work_on_off_days[]" value="no" <?php if(in_array("no",$six_rado)  ){echo "checked";} ?> >No<br> </td>
+		
+		</tr>
+	  </table>		
+	  <table class="form-table">
+			<tr>
+				<th>Other food handling preferences</th>
+				<td><input type="text" name="other_food_handling_pref" id="other_food_handling_pref" value="<?php echo esc_attr( get_the_author_meta( 'other_food_handling_pref', $user->ID ) ); ?>" class="regular-text" /><br /></td>
+			</tr>
+	  </table>
+</fieldset>	
+<fieldset>	
+<legend>Experience</legend>
+<table class="form-table">
+	<tr>
+	<?php 
+		$user_experince = get_user_meta($user->ID, 'user_experince',true);
+		$user_experince_Data = unserialize($user_experince);
+		?>	
+	<th>Home Country</th>
+		<td><input type="text" name="home_country_year" id="home_country_year" value="<?php echo $user_experince_Data['user_experince']['home_country']['year'] ?>" class="regular-text" / placeholder="year"><input type="text" name="home_country_month" id="home_country_month" value="<?php echo $user_experince_Data['user_experince']['home_country']['month'] ?>" class="regular-text" placeholder="month"/><br /></td>
+	</tr>
+	<tr>
+	<th>Singapore</th>
+		<td><input type="text" name="singapore_year" id="singapore_year" value="<?php echo $user_experince_Data['user_experince']['singapore']['year'] ?>" class="regular-text" / placeholder="year"><input type="text" name="singapore_month" id="singapore_month" value="<?php echo $user_experince_Data['user_experince']['singapore']['month'] ?>" class="regular-text" placeholder="month"/><br /></td>
+	</tr>
+	<tr>
+	<th>Malaysia</th>
+		<td><input type="text" name="malaysia_year" id="malaysia_year" value="<?php echo $user_experince_Data['user_experince']['malaysia']['year'] ?>" class="regular-text" / placeholder="year"><input type="text" name="malaysia_month" id="malaysia_month" value="<?php echo $user_experince_Data['user_experince']['malaysia']['month'] ?>" class="regular-text" placeholder="month"/><br /></td>
+	</tr>
+	<tr>
+	<th>Hongkong</th>
+		<td><input type="text" name="hongkong_year" id="hongkong_year" value="<?php echo $user_experince_Data['user_experince']['hongkong']['year'] ?>" class="regular-text" / placeholder="year"><input type="text" name="hongkong_month" id="hongkong_month" value="<?php echo $user_experince_Data['user_experince']['hongkong']['month'] ?>" class="regular-text" placeholder="month"/><br /></td>
+	</tr>
+	<tr>
+	<th>Taiwan</th>
+		<td><input type="text" name="taiwan_year" id="taiwan_year" value="<?php echo $user_experince_Data['user_experince']['Taiwan']['year'] ?>" class="regular-text" / placeholder="year"><input type="text" name="taiwan_month" id="taiwan_month" value="<?php echo $user_experince_Data['user_experince']['Taiwan']['month'] ?>" class="regular-text" placeholder="month"/><br /></td>
+	</tr>
+	<tr>
+	<th>Other Countries</th>
+		<td><input type="text" name="other_countries_year" id="other_countries_year" value="<?php echo $user_experince_Data['user_experince']['other_countries']['year'] ?>" class="regular-text" / placeholder="year"><input type="text" name="other_countries_month" id="other_countries_month" value="<?php echo $user_experince_Data['user_experince']['other_countries']['month'] ?>" class="regular-text" placeholder="month"/><br /></td>
+	</tr>
+</table>
+</fieldset>	
+<fieldset>	
+<legend>Introduction</legend>
+<table class="form-table">
+	<tr>
+	<?php
+	$content   = get_user_meta($user->ID, 'introduction',true);
+	$editor_id = 'introduction';
+	$settings  = array( 'media_buttons' => false );
+	wp_editor( $content, $editor_id, $settings );
+	
+   ?>
+	
+	
+	</tr>
+</table>	
+</fieldset>	
+ <fieldset>
+		<legend>Medical</legend>
+		<table class="form-table">
+		<?php 
+			$user_medical_type = get_user_meta($user->ID, 'medical_type_form',true);
+			$user_medical_type_Data = unserialize($user_medical_type);
+			//echo '<pre>'; print_r($user_medical_type_Data);echo '</pre>';
+		?>	
+			<tr>
+				<th>Allergies</th>
+				<td><input type="text" name="allergies" id="allergies" value="<?php echo $user_medical_type_Data['medical_type_form']['allergies']['type_of_allergies'] ?>" class="regular-text" /><br /></td>
+			</tr>
+			<tr>
+				<th>Physical disabilities</th>
+				<td><input type="text" name="physical_disabilities" id="physical_disabilities" value="<?php echo $user_medical_type_Data['medical_type_form']['physical_disabilities']['type_of_physical_disabilities'] ?>" class="regular-text" /><br /></td>
+			</tr>
+			<tr>
+				<th>Dietary restrictions</th>
+				<td><input type="text" name="dietary_restrictions" id="dietary_restrictions" value="<?php echo $user_medical_type_Data['medical_type_form']['dietary_restrictions']['type_of_dietary_restrictions'] ?>" class="regular-text" /><br /></td>
+			</tr>
+			<tr>
+				<th>Work Permit Expiry</th>
+				<td><textarea cols="15" rows="10" name="work_permit_expiry_for_medical" id="work_permit_expiry_for_medical"><?php echo $user_medical_type_Data['medical_type_form']['work_permit_expiry_for_medical']['type_of_work_permit_expiry_for_medical'] ?></textarea></td>
+			</tr>
+		</table>
+	</fieldset>
+	<fieldset>
+<legend>Past and existing illnesses</legend>
+		<table class="form-table">
+
+		<tr>
+			<?php 
+				$mental_Illness1 = get_user_meta($user->ID, 'past_and_existing_illness',true);
+				$mental_Illness_Data = unserialize($mental_Illness1);
+			?>
+			<td style="width: 32%;">Mental Illness </td>
+			<td>
+				<input type="radio" name="mental_Illness[]" value="yes" <?php if($mental_Illness_Data['past_and_existing_illness']['mental_Illness']['check_is_user_activate_mental_Illness'][0] == 'yes'){echo "checked";} ?> >Yes
+				<input type="radio" name="mental_Illness[]" value="no" <?php if($mental_Illness_Data['past_and_existing_illness']['mental_Illness']['check_is_user_activate_mental_Illness'][0] == 'no'){echo "checked";} ?> >No
+				<input type="radio" name="mental_Illness[]" value="unknown" <?php if($mental_Illness_Data['past_and_existing_illness']['mental_Illness']['check_is_user_activate_mental_Illness'][0] == 'unknown'){echo "checked";} ?> >Unknown<br>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 32%;">Epilepsy</td>
+			<td>
+			<?php 
+				$epilepsy1 = get_user_meta($user->ID, 'past_and_existing_illness',true);
+				$mental_Illness_Data = unserialize($epilepsy1);
+				
+			?>
+				<input type="radio" name="epilepsy[]" value="yes" <?php if($mental_Illness_Data['past_and_existing_illness']['epilepsy']['check_epilepsy'][0] == 'yes'){echo "checked";} ?> >Yes
+				<input type="radio" name="epilepsy[]" value="no" <?php if($mental_Illness_Data['past_and_existing_illness']['epilepsy']['check_epilepsy'][0] == 'no'){echo "checked";} ?> >No
+				<input type="radio" name="epilepsy[]" value="unknown" <?php if($mental_Illness_Data['past_and_existing_illness']['epilepsy']['check_epilepsy'][0] == 'unknown'){echo "checked";} ?> >Unknown<br>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 32%;">Asthma</td>
+			<td>
+			<?php 
+				$asthma1 = get_user_meta($user->ID, 'past_and_existing_illness',true);
+				$mental_Illness_Data = unserialize($asthma1);
+				
+			?>
+				<input type="radio" name="asthma[]" value="yes" <?php if($mental_Illness_Data['past_and_existing_illness']['asthma']['check_asthma'][0] == 'yes'){echo "checked";} ?> >Yes
+				<input type="radio" name="asthma[]" value="no" <?php if($mental_Illness_Data['past_and_existing_illness']['asthma']['check_asthma'][0] == 'no'){echo "checked";} ?> >No
+				<input type="radio" name="asthma[]" value="unknown" <?php if($mental_Illness_Data['past_and_existing_illness']['asthma']['check_asthma'][0] == 'unknown'){echo "checked";} ?> >Unknown<br>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 32%;">Diabetes</td>
+			<td>
+			<?php 
+				$diabetes1 = get_user_meta($user->ID, 'past_and_existing_illness',true);
+				$mental_Illness_Data = unserialize($diabetes1);
+				
+			?>
+				<input type="radio" name="diabetes[]" value="yes" <?php if($mental_Illness_Data['past_and_existing_illness']['diabetes']['check_diabetes'][0] == 'yes'){echo "checked";} ?> >Yes
+				<input type="radio" name="diabetes[]" value="no" <?php if($mental_Illness_Data['past_and_existing_illness']['diabetes']['check_diabetes'][0] == 'no'){echo "checked";} ?> >No
+				<input type="radio" name="diabetes[]" value="unknown" <?php if($mental_Illness_Data['past_and_existing_illness']['diabetes']['check_diabetes'][0] == 'unknown'){echo "checked";} ?> >Unknown<br>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 32%;">Hypertension</td>
+			<td>
+			<?php 
+				$hypertension1 = get_user_meta($user->ID, 'past_and_existing_illness',true);
+				$mental_Illness_Data = unserialize($hypertension1);
+				
+			?>
+				<input type="radio" name="hypertension[]" value="yes" <?php if($mental_Illness_Data['past_and_existing_illness']['hypertension']['check_hypertension'][0] == 'yes'){echo "checked";} ?> >Yes
+				<input type="radio" name="hypertension[]" value="no" <?php if($mental_Illness_Data['past_and_existing_illness']['hypertension']['check_hypertension'][0] == 'no'){echo "checked";} ?> >No
+				<input type="radio" name="hypertension[]" value="unknown" <?php if($mental_Illness_Data['past_and_existing_illness']['hypertension']['check_hypertension'][0] == 'unknown'){echo "checked";} ?> >Unknown<br>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 32%;">Tuberculosis</td>
+			<td>
+			<?php 
+				$tuberculosis1 = get_user_meta($user->ID, 'past_and_existing_illness',true);
+				$mental_Illness_Data = unserialize($tuberculosis1);
+				
+			?>
+				<input type="radio" name="tuberculosis[]" value="yes" <?php if($mental_Illness_Data['past_and_existing_illness']['tuberculosis']['check_tuberculosis'][0] == 'yes'){echo "checked";} ?> >Yes
+				<input type="radio" name="tuberculosis[]" value="no" <?php if($mental_Illness_Data['past_and_existing_illness']['tuberculosis']['check_tuberculosis'][0] == 'no'){echo "checked";} ?> >No
+				<input type="radio" name="tuberculosis[]" value="unknown" <?php if($mental_Illness_Data['past_and_existing_illness']['tuberculosis']['check_tuberculosis'][0] == 'unknown'){echo "checked";} ?> >Unknown<br>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 32%;">Heart disease</td>
+			<td>
+			<?php 
+				$heart_disease1 = get_user_meta($user->ID, 'past_and_existing_illness',true);
+				$mental_Illness_Data = unserialize($heart_disease1);
+				
+			?>
+				<input type="radio" name="heart_disease[]" value="yes" <?php if($mental_Illness_Data['past_and_existing_illness']['heart_disease']['check_heart_disease'][0] == 'yes'){echo "checked";} ?>>Yes
+				<input type="radio" name="heart_disease[]" value="no" <?php if($mental_Illness_Data['past_and_existing_illness']['heart_disease']['check_heart_disease'][0] == 'no'){echo "checked";} ?> >No
+				<input type="radio" name="heart_disease[]" value="unknown" <?php if($mental_Illness_Data['past_and_existing_illness']['heart_disease']['check_heart_disease'][0] == 'unknown'){echo "checked";} ?> >Unknown<br>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 32%;">Malaria</td>
+			<td>
+			<?php 
+				$check_malaria1 = get_user_meta($user->ID, 'past_and_existing_illness',true);
+				$mental_Illness_Data = unserialize($check_malaria1);
+				
+			?>
+				<input type="radio" name="malaria[]" value="yes" <?php if($mental_Illness_Data['past_and_existing_illness']['malaria']['check_malaria'][0] == 'yes'){echo "checked";} ?> >Yes
+				<input type="radio" name="malaria[]" value="no" <?php if($mental_Illness_Data['past_and_existing_illness']['malaria']['check_malaria'][0] == 'no'){echo "checked";} ?> >No
+				<input type="radio" name="malaria[]" value="unknown" <?php if($mental_Illness_Data['past_and_existing_illness']['malaria']['check_malaria'][0] == 'unknown'){echo "checked";} ?> >Unknown<br>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 32%;">Operations</td>
+			<td>
+			<?php 
+				$operations1 = get_user_meta($user->ID, 'past_and_existing_illness',true);
+				$mental_Illness_Data = unserialize($operations1);
+				
+			?>
+				<input type="radio" name="operations[]" value="yes" <?php if($mental_Illness_Data['past_and_existing_illness']['heart_operations']['check_operations'][0] == 'yes'){echo "checked";} ?>>Yes
+				<input type="radio" name="operations[]" value="no" <?php if($mental_Illness_Data['past_and_existing_illness']['heart_operations']['check_operations'][0] == 'no'){echo "checked";} ?> >No
+				<input type="radio" name="operations[]" value="unknown"<?php if($mental_Illness_Data['past_and_existing_illness']['heart_operations']['check_operations'][0] == 'unknown'){echo "checked";} ?> >Unknown<br>
+			</td>
+		</tr>
+		</table>
+</fieldset>
+<fieldset>
+
+<legend>Language</legend>
+    <table class="form-table">
+	         <?php 
+				$language_check = get_user_meta($user->ID, 'users_language_descr',true);
+				$language_check_Data = unserialize($language_check);
+				
+			?>
+       <tr>
+		   <th> Spoken English </th>
+		   <th> Experience </th>
+		   <th> Assessment </th>
+		   <th> N.A. ... Poor .............. Excellent </th>
+		   <th> Observation </th>
+	   </tr>
+	  <tr>
+	  <td>English</td>
+		<td><input type="text" name="english22" id="english22"  value="<?php echo $language_check_Data['data']['english']['experince']; ?>"> </td>
+		<td><input type="text" name="assement22" id="assement22" class="engValue" value="<?php echo $language_check_Data['data']['english']['assment']; ?>"readonly></td>
+	 	<td>
+			<div id="sliderRange"></div>
+		</td>
+     	<td>
+		<input type="text"  name="observation22" id="observation22" value="<?php echo $language_check_Data['data']['english']['observation']; ?>"> 
+		</td>
+      </tr>
+	<tr>
+	  <td>Mandarin/Chinese-Dialect</td>
+		<td><input type="text" value="<?php echo $language_check_Data['data']['ChineseDialect']['experince']; ?>" name="dialect33" id="dialect33"> </td>
+		<td><input type="text" name="assement33" id="assement33"  class="dialectvalue" value="<?php echo $language_check_Data['data']['ChineseDialect']['assment']; ?>" readonly></td>
+	 	<td>
+			<div id="sliderRange2"></div>
+		</td>
+     	<td>
+			<input type="text"  name="observation33" id="observation33" value="<?php echo $language_check_Data['data']['ChineseDialect']['observation']; ?>"> 
+		</td>
+      </tr>	
+      <tr>
+	  <td>Bahasa Indonesia/Malaysia</td>
+		<td><input type="text" value="<?php echo $language_check_Data['data']['malaysia_exp']['experince']; ?>" name="malaysia44" id="malaysia44" > </td>
+		<td><input type="text"  class="indonesiaValue" name="assement44" id="assement44" value="<?php echo $language_check_Data['data']['malaysia_exp']['assment']; ?>" readonly> </td>
+	 	<td>
+			<div id="sliderRange3"></div>
+		</td>
+     	<td>
+			<input type="text" value="<?php echo $language_check_Data['data']['malaysia_exp']['observation']; ?>" name="observation44" id="observation44"> 
+		</td>
+      </tr>	
+	   <tr>
+	  <td><input type="text" value="<?php echo $language_check_Data['data']['Other_exp']['experince_other']; ?>" name="othr_val" id="othr_val"></td>
+		<td><input type="text" value="<?php echo $language_check_Data['data']['Other_exp']['experince']; ?>" name="othr_expre_name" id="othr_expre_id"> </td>
+		<td><input type="text" name="assement55" id="assement55" class="othvalue34" value="<?php echo $language_check_Data['data']['Other_exp']['assment']; ?>" readonly></span> </td>
+	 	<td>
+			<div id="sliderRange4"></div>
+		</td>
+     	<td>
+			<input type="text" value="<?php echo $language_check_Data['data']['Other_exp']['observation']; ?>" name="observation_othr" id="observation_othr"> 
+		</td>
+      </tr>	
+
+     
+</table>	   
+</div>
+</fieldset>
+<fieldset>
+	<legend>Skills</legend>
+    <table class="form-table">
+	         <?php 
+				$skill_check = get_user_meta($user->ID, 'users_skill_descr',true);
+				$skill_check_Data = unserialize($skill_check);
+			?>
+       <tr>
+		   <th>Areas of Work</th>
+		   <th>Willingness & Experience</th>
+		   <th>     </th>
+		   <th> Assessment </th>
+		   <th> N.A. ... Poor .............. Excellent </th>
+		   <th> Observation </th>
+	   </tr>
+	  <tr>
+	  <td>Care for Infant/Children</td>
+		<td><input type="text" name="care_infant_children_year" id="care_infant_children_year"  value="<?php echo $skill_check_Data['skill_data']['care_infant_children']['year'];  ?>"> </td>
+		<td><input type="text" name="care_infant_children_month" id="care_infant_children_month"  value="<?php  echo $skill_check_Data['skill_data']['care_infant_children']['month'];  ?>"> </td>
+		<td><input type="text" name="assement_care_infant_child" id="assement_care_infant_child" class="infant_child" value="<?php  echo $skill_check_Data['skill_data']['care_infant_children']['assement']; ?>"readonly></td>
+	 	<td>
+			<div id="slider_infant"></div>
+		</td>
+     	<td>
+		<input type="text"  name="observation_infant_child" id="observation_infant_child" value="<?php echo $skill_check_Data['skill_data']['care_infant_children']['observation']; ?>"> 
+		</td>
+      </tr>
+	<tr>
+	  <td>Care for Elderly</td>
+		<td><input type="text" value="<?php echo $skill_check_Data['skill_data']['care_elderly']['year']; ?>" name="care_elderly_year" id="care_elderly_year"> </td>
+		<td><input type="text" value="<?php echo $skill_check_Data['skill_data']['care_elderly']['month'];  ?>" name="care_elderly_month" id="care_elderly_month"> </td>
+		<td><input type="text" name="assement_care_elderly" id="assement_care_elderly"  class="care_elderly_ck" value="<?php echo $skill_check_Data['skill_data']['care_elderly']['assement'];  ?>" readonly></td>
+	 	<td>
+			<div id="care_elderly_Slider"></div>
+		</td>
+     	<td>
+			<input type="text"  name="observation_care_elderly" id="observation_care_elderly" value="<?php echo $skill_check_Data['skill_data']['care_elderly']['observation'];  ?>"> 
+		</td>
+      </tr>	
+      <tr>
+	  <td>Care for Disabled</td>
+		<td><input type="text" value="<?php echo $skill_check_Data['skill_data']['care_for_disabled']['year']; ?>" name="care_for_disabled_year" id="care_for_disabled_year" > </td>
+		<td><input type="text" value="<?php echo $skill_check_Data['skill_data']['care_for_disabled']['month']; ?>" name="care_for_disabled_month" id="care_for_disabled_month" > </td>
+		<td><input type="text"  class="care_for_disabled_ck" name="assement_care_disabled" id="assement_care_disabled" value="<?php echo $skill_check_Data['skill_data']['care_for_disabled']['assement']; ?>" readonly> </td>
+	 	<td>
+			<div id="care_for_disabled_slider"></div>
+		</td>
+     	<td>
+			<input type="text" value="<?php echo $skill_check_Data['skill_data']['care_for_disabled']['observation'];  ?>" name="observation_care_for_disabled" id="observation_care_for_disabled"> 
+		</td>
+      </tr>	
+	  <tr>
+	  <td>General Housework</td>
+		<td><input type="text" value="<?php echo $skill_check_Data['skill_data']['genral_housework']['year']; ?>" name="genral_housework_year" id="genral_housework_year" > </td>
+		<td><input type="text" value="<?php echo $skill_check_Data['skill_data']['genral_housework']['month']; ?>" name="genral_housework_month" id="genral_housework_month" > </td>
+		<td><input type="text"  class="genral_housework_ck" name="assement_genral_housework" id="assement_genral_housework" value="<?php echo $skill_check_Data['skill_data']['genral_housework']['assement'];  ?>" readonly> </td>
+	 	<td>
+			<div id="genral_housework_slider"></div>
+		</td>
+     	<td>
+			<input type="text" value="<?php echo $skill_check_Data['skill_data']['genral_housework']['observation']; ?>" name="observation_genral_housework" id="observation_genral_housework"> 
+		</td>
+      </tr>	
+	  <tr>
+	  <td>Cooking</td>
+		<td><input type="text" value="<?php echo $skill_check_Data['skill_data']['cooking']['year']; ?>" name="cooking_year" id="cooking_year" > </td>
+		<td><input type="text" value="<?php echo $skill_check_Data['skill_data']['cooking']['month']; ?>" name="cooking_month" id="cooking_month" > </td>
+		<td><input type="text"  class="cooking_ck" name="assement_cooking" id="assement_cooking" value="<?php echo $skill_check_Data['skill_data']['cooking']['assement'];?>" readonly> </td>
+	 	<td>
+			<div id="cooking_slider"></div>
+		</td>
+     	<td>
+			<input type="text" value="<?php echo $skill_check_Data['skill_data']['cooking']['observation'];?>" name="cooking_observation" id="cooking_observation"> 
+		</td>
+      </tr>	
+	   <tr>
+	  <td><input type="text" value="<?php echo $skill_check_Data['skill_data']['other_val_main']['other_main'];  ?>" name="othr_val_main11" id="othr_val_main11"></td>
+	  <td><input type="text" value="<?php echo $skill_check_Data['skill_data']['other_val_main']['year'];  ?>" name="othr_val_main_year" id="othr_val_main_year"></td>
+	  <td><input type="text" value="<?php echo $skill_check_Data['skill_data']['other_val_main']['month'];  ?>" name="othr_val_main_month" id="othr_val_main_month"></td>
+	   <td><input type="text" name="assement_othr_val_main" id="assement_othr_val_main" class="assement_othr_val_ck" value="<?php echo $skill_check_Data['skill_data']['other_val_main']['assement'];  ?>" readonly></span> </td>
+	 	<td>
+			<div id="othr_val_main_slider"></div>
+		</td>
+     	<td>
+			<input type="text" value="<?php echo $skill_check_Data['skill_data']['other_val_main']['observation']; ?>" name="observation_othr_val_main" id="observation_othr_val_main"> 
+		</td>
+      </tr>	
+     <tr>
+	  <td>Infant/children Age Range</td>
+	  <td><input type="text" value="<?php echo $skill_check_Data['skill_data']['infant_child_age']['other_main'];  ?>" name="infant_child_age_range" id="infant_child_age_range"></td>
+	 </tr>
+     
+</table>	   
+
+</fieldset>
+
+
+<?php }  if($user_roles[0] == 'portal'){ ?>
+ <table class="form-table">
+        <tr>
+            <th>Is Featured  </th>
+            <td>
+			<select name="agencie_featured">
+					<option value="">--Select Is Agencie Featured--</option>
+					<option <?php if(esc_attr( get_the_author_meta( 'agencie_featured', $user->ID ) ) == 'yes'){ echo 'selected'; } ?> value="yes">Yes</option>
+					<option <?php if(esc_attr( get_the_author_meta( 'agencie_featured', $user->ID ) ) == 'no'){ echo 'selected'; } ?> value="no">No</option> 
+				</select>
+			</td>
+        </tr>
+		 <tr>
+            <th>License#</th>
+            <td>
+			<input type="text" name="portal_license_no" id="portal_license_no" value="<?php echo esc_attr( get_the_author_meta( 'portal_license_no', $user->ID ) ); ?>" class="regular-text" />
+			</td>
+        </tr>
+		 <tr>
+            <th>Opening Hour</th>
+            <td>
+			<input type="text" name="opening_hours_portal" id="opening_hours_portal" value="<?php echo esc_attr( get_the_author_meta( 'opening_hours_portal', $user->ID ) ); ?>" class="regular-text" />
+			</td>
+        </tr>
+		 <tr>
+            <th>Agencie Tel</th>
+            <td>
+			<input type="text" name="portal_tel" id="portal_tel" value="<?php echo esc_attr( get_the_author_meta( 'portal_tel', $user->ID ) ); ?>" class="regular-text" />
+			</td>
+        </tr>
+		<tr>
+            <th>Agencie Fax</th>
+            <td>
+			<input type="text" name="portal_fax" id="portal_fax" value="<?php echo esc_attr( get_the_author_meta( 'portal_fax', $user->ID ) ); ?>" class="regular-text" />
+			</td>
+        </tr>
+		<tr>
+            <th>Contact Person</th>
+            <td>
+			<input type="text" name="portal_person_contact" id="portal_person_contact" value="<?php echo esc_attr( get_the_author_meta( 'portal_person_contact', $user->ID ) ); ?>" />
+			</td>
+        </tr>
+		<tr>
+            <th>EA Personnel</th>
+            <td>
+			<input type="text" name="ea_personnel_contact" id="ea_personnel_contact" value="<?php echo esc_attr( get_the_author_meta( 'ea_personnel_contact', $user->ID ) ); ?>" />
+			</td>
+        </tr>
+		<tr>
+            <th>Agencie Main Office</th>
+            <td>
+			<textarea rows="10" cols="5" name="portal_main_office_add" id="portal_main_office_add"><?php echo esc_attr( get_the_author_meta( 'portal_main_office_add', $user->ID ) ); ?></textarea>
+			</td>
+        </tr>
+</table>		
+
+
+<?php } }
+add_action( 'personal_options_update', 'be_save_extra_profile_fields' );
+add_action( 'edit_user_profile_update', 'be_save_extra_profile_fields' );
+
+function be_save_extra_profile_fields( $user_id ) {
+
+    if ( ! current_user_can( 'edit_user', $user_id ) ) {
+        return false;
+    }
+
+    update_user_meta( $user_id, 'marital_status', esc_attr( $_POST['marital_status'] ) );
+	$data = serialize($_POST['availability_FDW']);
+    update_user_meta($user_id, 'availability_FDW', $data);
+	
+	$data_Skill = serialize($_POST['evaluation_skill']);
+    update_user_meta($user_id, 'evaluation_skill', $data_Skill);
+	
+	$data_handle_pork = serialize($_POST['able_to_handle_pork']);
+    update_user_meta($user_id, 'able_to_handle_pork', $data_handle_pork);
+	
+	$data_eat_pork = serialize($_POST['able_to_eat_pork']);
+    update_user_meta($user_id, 'able_to_eat_pork', $data_eat_pork);
+	
+	$data_handle_beef = serialize($_POST['able_to_handle_beef']);
+    update_user_meta($user_id, 'able_to_handle_beef', $data_handle_beef);
+	
+	$data_able_to_do_simple_sewing = serialize($_POST['able_to_do_simple_sewing']);
+    update_user_meta($user_id, 'able_to_do_simple_sewing', $data_able_to_do_simple_sewing);
+	
+	$data_care_dog_cat = serialize($_POST['able_to_care_dog_cat']);
+    update_user_meta($user_id, 'able_to_care_dog_cat', $data_care_dog_cat);
+	
+	$data_care_gardening_work = serialize($_POST['able_to_care_gardening_work']);
+    update_user_meta($user_id, 'able_to_care_gardening_work', $data_care_gardening_work);
+	
+	$data_work_on_off_days = serialize($_POST['willing_to_work_on_off_days']);
+    update_user_meta($user_id, 'willing_to_work_on_off_days', $data_work_on_off_days);
+	
+	
+	$data_car_wash = serialize($_POST['willing_car_wash']);
+    update_user_meta($user_id, 'willing_car_wash', $data_car_wash);
+	$products = array(
+				'user_experince' => array(
+								'home_country' => array(
+									'year' => $_POST["home_country_year"],
+									'month' => $_POST["home_country_month"]  
+								),
+								'singapore' => array(
+									'year' => $_POST["singapore_year"],
+									'month' => $_POST["singapore_month"]  
+								),
+								'malaysia' => array(
+									'year' => $_POST["malaysia_year"],
+									'month' => $_POST["malaysia_month"]  
+								),
+								'hongkong' => array(
+									'year' => $_POST["hongkong_year"],
+									'month' => $_POST["hongkong_month"]  
+								),
+								'Taiwan' => array(
+									'year' => $_POST["taiwan_year"],
+									'month' => $_POST["taiwan_month"]    
+								),
+								'other_countries' => array(
+									'year' => $_POST["other_countries_year"],
+									'month' => $_POST["other_countries_month"]  
+								)
+							)
+						);
+	 $user_exp = serialize($products);			
+	 update_user_meta($user_id, 'user_experince', $user_exp);
+	 $medical_type = array(
+				'medical_type_form' => array(
+								'allergies' => array(
+									'type_of_allergies' => $_POST["allergies"]
+									),
+								'physical_disabilities' => array(
+									'type_of_physical_disabilities' => $_POST["physical_disabilities"]
+									),
+								'dietary_restrictions' => array(
+								     'type_of_dietary_restrictions' => $_POST["dietary_restrictions"]  
+								),
+								'work_permit_expiry_for_medical' => array(
+									'type_of_work_permit_expiry_for_medical' => $_POST["work_permit_expiry_for_medical"],
+									
+								)
+							)
+						);
+	  $user_medical_type = serialize($medical_type);			
+	  update_user_meta($user_id, 'medical_type_form', $user_medical_type);
+	  $past_illness = array(
+				'past_and_existing_illness' => array(
+								'mental_Illness' => array(
+									'check_is_user_activate_mental_Illness' => $_POST["mental_Illness"]
+									),
+								'epilepsy' => array(
+									'check_epilepsy' => $_POST["epilepsy"]
+									),
+								'asthma' => array(
+								     'check_asthma' => $_POST["asthma"]  
+								),
+								'diabetes' => array(
+									'check_diabetes' => $_POST["diabetes"],
+									
+								),
+								'hypertension' => array(
+									'check_hypertension' => $_POST["hypertension"],
+									
+								),
+								'tuberculosis' => array(
+									'check_tuberculosis' => $_POST["tuberculosis"],
+									
+								),
+								'heart_disease' => array(
+									'check_heart_disease' => $_POST["heart_disease"],
+									
+								),
+								'malaria' => array(
+									'check_malaria' => $_POST["malaria"],
+									
+								),
+								'heart_operations' => array(
+									'check_operations' => $_POST["operations"],
+									
+								)
+							)
+						);
+	  
+	  $past_illness_check = serialize($past_illness);			
+	  update_user_meta($user_id, 'past_and_existing_illness', $past_illness_check);
+	  
+	         $language = array(
+				'data' => array(
+								'english' => array(
+									'experince' => $_POST["english22"],
+									'assment' => $_POST["assement22"],
+									'observation' => $_POST["observation22"]
+									),
+								'ChineseDialect' => array(
+									'experince' => $_POST["dialect33"],
+									'assment' => $_POST["assement33"],
+									'observation' => $_POST["observation33"]
+									),
+								'malaysia_exp' => array(
+								    'experince' => $_POST["malaysia44"],
+									'assment' => $_POST["assement44"],
+									'observation' => $_POST["observation44"]
+								),
+								'Other_exp' => array(
+									'experince_other' => $_POST["othr_val"],
+									'experince' => $_POST["othr_expre_name"],
+									'assment' => $_POST["assement55"],
+									'observation' => $_POST["observation_othr"]
+									
+								)
+							)
+						);
+	  
+	   $language_check = serialize($language);			
+	   update_user_meta($user_id, 'users_language_descr', $language_check);
+	    $Skills = array(
+				'skill_data' => array(
+								'care_infant_children' => array(
+									'year' => $_POST["care_infant_children_year"],
+									'month' => $_POST["care_infant_children_month"],
+									'assement' => $_POST["assement_care_infant_child"],
+									'observation' => $_POST["observation_infant_child"]
+									),
+								'care_elderly' => array(
+									'year' => $_POST["care_elderly_year"],
+									'month' => $_POST["care_elderly_month"],
+									'assement' => $_POST["assement_care_elderly"],
+									'observation' => $_POST["observation_care_elderly"]
+									),
+								'care_for_disabled' => array(
+								    'year' => $_POST["care_for_disabled_year"],
+									'month' => $_POST["care_for_disabled_month"],
+									'assement' => $_POST["assement_care_disabled"],
+									'observation' => $_POST["observation_care_for_disabled"]
+								),
+								'genral_housework' => array(
+									'year' => $_POST["genral_housework_year"],
+									'month' => $_POST["genral_housework_month"],
+									'assement' => $_POST["assement_genral_housework"],
+									'observation' => $_POST["observation_genral_housework"]
+									
+								),
+								'cooking' => array(
+									'year' => $_POST["cooking_year"],
+									'month' => $_POST["cooking_month"],
+									'assement' => $_POST["assement_cooking"],
+									'observation' => $_POST["cooking_observation"]
+									
+								),
+								'other_val_main' => array(
+									'other_main' => $_POST["othr_val_main11"],
+									'year' => $_POST["othr_val_main_year"],
+									'month' => $_POST["othr_val_main_month"],
+									'assement' => $_POST["assement_othr_val_main"],
+									'observation' => $_POST["observation_othr_val_main"]
+									
+								),
+								'infant_child_age' => array(
+									'other_main' => $_POST["infant_child_age_range"]
+								)
+							)
+						);
+	  
+	   $skill_check = serialize($Skills);			
+	   update_user_meta($user_id, 'users_skill_descr', $skill_check);
+
+	  
+	  update_user_meta($user_id, 'introduction',esc_attr( $_POST['introduction']));
+	
+	update_user_meta( $user_id, 'other_food_handling_pref', esc_attr( $_POST['other_food_handling_pref'] ) );
+	update_user_meta( $user_id, 'maidtype', esc_attr( $_POST['maidtype'] ) );
+    update_user_meta( $user_id, 'birth_date', esc_attr( $_POST['birth_date'] ) );
+    update_user_meta( $user_id, 'birth_place', esc_attr( $_POST['birth_place'] ) );
+	$dob=$_POST['birth_date'];
+    $age = (date('Y') - date('Y',strtotime($dob)));
+     update_user_meta( $user_id, 'gender', esc_attr($_POST['gender']) );
+    update_user_meta( $user_id, 'address', esc_attr( $_POST['address'] ) );
+    update_user_meta( $user_id, 'phoneno', esc_attr( $_POST['phoneno'] ) );
+    update_user_meta( $user_id, 'religion', esc_attr( $_POST['religion'] ) );
+    update_user_meta( $user_id, 'city', esc_attr( $_POST['city'] ) );
+    update_user_meta( $user_id, 'state', esc_attr( $_POST['state'] ) );
+    update_user_meta( $user_id, 'zip', esc_attr( $_POST['zip'] ) );
+   update_user_meta( $user_id, 'refcode', esc_attr( $_POST['refcode'] ) );
+    update_user_meta( $user_id, 'nationality', esc_attr( $_POST['nationality'] ) );
+    update_user_meta( $user_id, 'age', $age );
+    update_user_meta( $user_id, 'responsibilities', $_POST['responsibilities'] );
+    update_user_meta( $user_id, 'experiences', $_POST['experiences'] );
+    update_user_meta( $user_id, 'languageproficiencies', $_POST['languageproficiencies'] );
+    update_user_meta( $user_id, 'educationlevels', esc_attr($_POST['educationlevels']) );
+    update_user_meta( $user_id, 'height', esc_attr($_POST['height']) );
+    update_user_meta( $user_id, 'weight', esc_attr($_POST['weight']) );
+    update_user_meta( $user_id, 'maid_added_by', esc_attr($_POST['maid_added_by']) );
+	update_user_meta( $user_id, 'is_featured', esc_attr($_POST['is_featured']) );
+	update_user_meta( $user_id, 'is_publish', esc_attr($_POST['is_publish']) );
+	update_user_meta( $user_id, 'maid_status', esc_attr($_POST['maid_status']) );
+	update_user_meta( $user_id, 'no_of_siblings', esc_attr($_POST['no_of_siblings']) );
+	update_user_meta( $user_id, 'no_of_children', esc_attr($_POST['no_of_children']) );
+	update_user_meta( $user_id, 'children_Age', esc_attr($_POST['children_Age']) );
+	update_user_meta( $user_id, 'education_info', esc_attr($_POST['education_info']) );
+	update_user_meta( $user_id, 'base_salary', esc_attr($_POST['base_salary']) );
+	update_user_meta( $user_id, 'rest_day_preference', esc_attr($_POST['rest_day_preference']) );
+	update_user_meta( $user_id, 'passport_num', esc_attr($_POST['passport_num']) );
+	update_user_meta( $user_id, 'passport_expiry', esc_attr($_POST['passport_expiry']) );
+	update_user_meta( $user_id, 'work_permit_num', esc_attr($_POST['work_permit_num']) );
+	update_user_meta( $user_id, 'work_permit_expiry', esc_attr($_POST['work_permit_expiry']) );
+	update_user_meta( $user_id, 'home_Address', esc_attr($_POST['home_Address']) );
+	update_user_meta( $user_id, 'home_number', esc_attr($_POST['home_number']) );
+	update_user_meta( $user_id, 'home_contacts', esc_attr($_POST['home_contacts']) );
+	update_user_meta( $user_id, 'repatriate_air_port', esc_attr($_POST['repatriate_air_port']) );
+	
+	//Add Field For Agency Start
+	update_user_meta( $user_id, 'agencie_featured', esc_attr($_POST['agencie_featured']) );
+	update_user_meta( $user_id, 'opening_hours_portal', esc_attr($_POST['opening_hours_portal']) );
+	update_user_meta( $user_id, 'portal_tel', esc_attr($_POST['portal_tel']) );
+	update_user_meta( $user_id, 'portal_fax', esc_attr($_POST['portal_fax']) );
+	update_user_meta( $user_id, 'portal_person_contact', esc_attr($_POST['portal_person_contact']) );
+	update_user_meta( $user_id, 'ea_personnel_contact', esc_attr($_POST['ea_personnel_contact']) );
+	update_user_meta( $user_id, 'portal_main_office_add', esc_attr($_POST['portal_main_office_add']) );
+	update_user_meta( $user_id, 'portal_license_no', $_POST['portal_license_no'] );
+	
+	//Add Field For Agency End
+}
+//Add fields for maid in admin - END
+
+
+add_action( 'wp_ajax_searchmaids', 'searchmaids_callback' );
+add_action( 'wp_ajax_nopriv_searchmaids', 'searchmaids_callback' );
+function searchmaids_callback(){
+    $searchAgency = $_POST['searchAgency'];
+    $searchNationality = $_POST['searchNationality'];
+	$searchResponsibility = $_POST['searchResponsibility'];
+	$searchReligion = $_POST['searchReligion'];
+	$searchMaritalStatus = $_POST['searchMaritalStatus'];
+	$searchmaidheight = $_POST['searchmaidheight'];
+	$searchAgeGroup = $_POST['searchAgeGroup'];
+	$searchExperience = $_POST['searchExperience'];
+	$searchLanguage = $_POST['searchLanguage'];
+	$searchEducation = $_POST['searchEducation'];
+	$meta_query = array();
+	$meta_query['relation'] = 'AND';
+	if($_POST['searchAgency'] && count($_POST['searchAgency']) > 0){
+		$searchAgency = $_POST['searchAgency']; //This is an array
+		$searchAgency_query_arr = array();
+		foreach($searchAgency as $searchAgencys){
+			if($searchAgencys != '-1'){
+				$searchAgency_query_arr['relation'] = 'OR';
+				$searchAgency_query_arr[] = array(
+									'key'     => 'maid_added_by',
+									'value'   => $searchAgencys,
+									'compare' => '='
+								);
+			}
+		}
+		$meta_query[] = $searchAgency_query_arr;
+	}	
+	if($_POST['searchNationality'] && count($_POST['searchNationality']) > 0){
+		$searchNationality = $_POST['searchNationality']; //This is an array
+		$searchNationality_query_arr = array();
+		foreach($searchNationality as $searchNationalitys){
+			if($searchNationalitys != '-1'){
+				$searchNationality_query_arr['relation'] = 'OR';
+				$searchNationality_query_arr[] = array(
+									'key'     => 'nationality',
+									'value'   => $searchNationalitys,
+									'compare' => '='
+								);
+			}
+		}
+		$meta_query[] = $searchNationality_query_arr;
+	}
+	if($_POST['searchResponsibility'] && count($_POST['searchResponsibility']) > 0){
+		$searchResponsibility = $_POST['searchResponsibility']; //This is an array
+		$searchResponsibility_query_arr = array();
+		foreach($searchResponsibility as $searchResponsibilitys){
+			if($searchResponsibilitys != '-1'){
+				$searchResponsibility_query_arr['relation'] = 'OR';
+				$searchResponsibility_query_arr[] = array(
+									'key'     => 'responsibilities',
+									'value'   => $searchResponsibilitys,
+									'compare' => 'LIKE'
+								);
+			}
+		}
+		$meta_query[] = $searchResponsibility_query_arr;
+	}
+	
+	if($_POST['searchReligion'] && count($_POST['searchReligion']) > 0){
+		$searchReligion = $_POST['searchReligion']; //This is an array
+		$searchReligion_query_arr = array();
+		foreach($searchReligion as $searchReligions){
+			if($searchReligions != '-1'){
+				$searchReligion_query_arr['relation'] = 'OR';
+				$searchReligion_query_arr[] = array(
+									'key'     => 'religion',
+									'value'   => $searchReligions,
+									'compare' => '='
+								);
+			}
+		}
+		$meta_query[] = $searchReligion_query_arr;
+	}
+	if($_POST['searchMaritalStatus'] && count($_POST['searchMaritalStatus']) > 0){
+		$searchMaritalStatus = $_POST['searchMaritalStatus']; //This is an array
+		$searchMaritalStatus_query_arr = array();
+		foreach($searchMaritalStatus as $searchMaritalStatuss){
+			if($searchMaritalStatuss != '-1'){
+				$searchMaritalStatus_query_arr['relation'] = 'OR';
+				$searchMaritalStatus_query_arr[] = array(
+									'key'     => 'marital_status',
+									'value'   => $searchMaritalStatuss,
+									'compare' => '='
+								);
+			}
+		}
+		$meta_query[] = $searchMaritalStatus_query_arr;
+	}
+
+	if($_POST['searchmaidheight'] && count($_POST['searchmaidheight']) > 0){
+		$searchmaidheight = $_POST['searchmaidheight']; 
+		$searchmaidheight_separate = '';
+		
+		foreach($searchmaidheight as $searchmaidheights){
+			if($searchmaidheights != '-1'){
+				$searchmaidheight_query_arr = array();
+				$searchmaidheight_separate = explode('-',$searchmaidheights); 
+				$searchmaidheight_query_arr['relation'] = 'OR';
+				$searchmaidheight_query_arr[] = array(
+									'key'     => 'height',
+									'value'   => array($searchmaidheight_separate[0],$searchmaidheight_separate[1]),
+									'type'    => 'numeric',
+									'compare' => 'BETWEEN'
+								);	
+				
+			}
+		}
+		$meta_query[] = $searchmaidheight_query_arr;
+	}	
+	if($_POST['searchAgeGroup'] && count($_POST['searchAgeGroup']) > 0){
+		$searchAgeGroup = $_POST['searchAgeGroup']; 
+		$searchAgeGroup_separate = '';
+		$all_ages = array();
+		foreach($searchAgeGroup as $searchAgeGroups){
+			if($searchAgeGroups != '-1'){
+				$searchAgeGroup_query_arr = array();
+				$searchAgeGroup_separate = explode('-',$searchAgeGroups); 
+				$searchAgeGroup_query_arr['relation'] = 'OR';
+				$searchAgeGroup_query_arr[] = array(
+									'key'     => 'age',
+									'value'   => array($searchAgeGroup_separate[0],$searchAgeGroup_separate[1]),
+									'type'    => 'numeric',
+									'compare' => 'BETWEEN'
+								);	
+			}
+		}
+		$meta_query[] = $searchAgeGroup_query_arr;
+	}
+	if($_POST['searchExperience'] && count($_POST['searchExperience']) > 0){
+		$searchExperience = $_POST['searchExperience']; //This is an array
+		$searchExperience_query_arr = array();
+		foreach($searchExperience as $searchExperiences){
+			if($searchExperiences != '-1'){
+				$searchExperience_query_arr['relation'] = 'OR';
+				$searchExperience_query_arr[] = array(
+									'key'     => 'experiences',
+									'value'   => $searchExperiences,
+									'compare' => 'LIKE'
+								);
+			}
+		}
+		$meta_query[] = $searchExperience_query_arr;
+	}
+	if($_POST['searchLanguage'] && count($_POST['searchLanguage']) > 0){
+		$searchLanguage = $_POST['searchLanguage']; //This is an array
+		$searchLanguage_query_arr = array();
+		foreach($searchLanguage as $searchLanguages){
+			if($searchLanguages != '-1'){
+				$searchLanguage_query_arr['relation'] = 'OR';
+				$searchLanguage_query_arr[] = array(
+									'key'     => 'languageproficiencies',
+									'value'   => $searchLanguages,
+									'compare' => 'LIKE'
+								);
+			}
+		}
+		$meta_query[] = $searchLanguage_query_arr;
+	}
+	if($_POST['searchEducation'] && count($_POST['searchEducation']) > 0){
+		$searchEducation = $_POST['searchEducation']; //This is an array
+		$searchEducation_query_arr = array();
+		foreach($searchEducation as $searchEducations){
+			if($searchLanguages != '-1'){
+				$searchEducation_query_arr['relation'] = 'OR';
+				$searchEducation_query_arr[] = array(
+									'key'     => 'educationlevels',
+									'value'   => $searchEducations,
+									'compare' => 'LIKE'
+								);
+			}
+		}
+		$meta_query[] = $searchEducation_query_arr;
+	}
+	$args = array('fields' => 'all','role'=>'maid');
+	$args['meta_query'] = $meta_query;
+	//print_r($args);
+	$users = '';
+	$users = get_users( $args ); 
+	//print_r($users);
+	if(count($users) > 0){
+		$return = '';
+		foreach($users as $user){ 
+			$nationality = get_user_meta($user->ID,'nationality',true);
+			$religion = get_user_meta($user->ID,'religion',true);
+			$marital_status = get_user_meta($user->ID,'marital_status',true);
+			$cupp_upload_meta = get_user_meta($user->ID,'cupp_upload_meta',true);
+			if($cupp_upload_meta != ''){ 
+				$profile_image = $cupp_upload_meta;
+			}else{
+				$profile_image = get_template_directory_uri().'/images/maid_1.png';
+			}
+			$return .= '<div class="searchindividualresult"><a href="'.site_url().'"/user-detail-page/?id='.$user->ID.'"><img src="'.$profile_image.'" ></a>';
+			$nationality_name = $religion_name = $marital_status_name = '';
+			if($nationality != '') { $nationality_name = get_the_title( $nationality ); }
+			if($religion != '') { $religion_name = get_the_title( $religion ); }
+			if($marital_status != '') { $marital_status_name = get_the_title( $marital_status ); }
+			$return .= '<h5>'.$nationality_name.'</h5>';
+			$return .= '<p>'.$religion_name.'</p>';
+			$return .= '<p>'.$marital_status_name.' (26)</p>';
+			$return .= '</div>';
+		}
+		echo $return;die;
+	}else{
+		echo 'No Users found';die;	
+	} 
+}
+//Featured maids Section in admin - start
+add_action('admin_menu', 'featured_maids');
+
+function featured_maids() {
+	add_submenu_page( 'edit.php?post_type=maid_applications', 'Featured Maids', 'Featured Maids', 'manage_options', 'featured_maids', 'featured_maids_callback' ); 
+}
+
+function featured_maids_callback() {
+	 $uargs = array(
+				'fields'=>'all',
+				'role'=>'maid',	 
+				'meta_query'=>
+				 array(
+					array(
+						'relation' => 'AND',
+						array(
+							'key' => 'set_as_featured_by_portal',
+							'value' => 'yes',
+							'compare' => "=",
+						)
+				  )
+			   )
+	);
+
+	$umaids = get_users( $uargs ); ?>
+	<h2>Featured maids set by agencies</h2> 
+	<script>
+		jQuery(document).ready(function(){
+			jQuery('.change_status').on('click',function(){
+				var thisfeatured = jQuery(this);
+				var maidid = jQuery(this).attr('data-maidid');
+				var actionsent = jQuery(this).html();
+				var data = {
+								action:'change_featured_maid_status_admin',
+								maidid:maidid,
+								actionsent:actionsent
+							};
+				var ajaxurl = "<?php echo admin_url('admin-ajax.php'); ?>";
+				jQuery.ajax({
+					url: ajaxurl,
+					type: "POST",
+					data: data,
+					success: function (response) {
+						if(response == 'Approved'){
+							thisfeatured.html('Disapprove');
+							thisfeatured.parents('.thisrow').find('.thisapprove').html('Yes');
+						}else if(response == 'Disapproved'){
+							thisfeatured.html('Approve');
+							thisfeatured.parents('.thisrow').find('.thisapprove').html('No');
+						}
+					}
+				});
+			});
+		});
+	</script>
+		<style>
+			.TplJobTable  {line-height:130%; display:block; margin:10px 0 0;}
+			.TplJobTable table {border:1px solid #ddd;margin-top:10px;}
+			.TplJobTable th { padding:10px;}
+			.TplJobTable thead tr {  background:#fff;border-bottom:1px solid #ddd;}
+			.TplJobTable td{padding:6px 10px;}
+			.TplJobTable tbody tr:nth-child(even){background:#fff;}
+		</style>
+		<div class="TplJobTable">
+		  <table>
+			<!--p style="float: left; width: 100%;">
+			  <input id="selectalltemplates" name="selectalltemplates" type="checkbox" value="">
+			  Select All</p>
+			<br /-->
+			<form action="" method="post" enctype="multipart/form-data" name="deletetemplates" id="deletetemplates">
+			  <!--input type="submit" value="Delete" name="Deletetemplates" class="button button-primary button-large" /-->
+			  <thead>
+				<tr>
+				  <!--th width="5%"></th-->
+				  <th width="20%">Maid Name</th>
+				  <th width="45%">Maid Agency</th>
+				  <th width="14%">Is featured by admin?</th>
+				  <th width="6%">Action</th>
+				</tr>
+			  </thead>
+			  <tbody>
+				<?php $k = 0; 
+				$i = 1;
+				if(!empty($umaids)){
+					foreach($umaids as $maid){ 
+						$maid_id = '';
+						$maid_id = $maid->ID;
+						$maid_full = get_user_by( 'ID', $maid_id );
+						$maid_name = $maid_full->first_name . ' ' . $maid_full->last_name;
+						$maid_added_by = get_user_meta($maid_id,'maid_added_by',true);
+						$set_as_featured_by_admin = get_user_meta($maid_id,'set_as_featured_by_admin',true);
+						$agency_name = $maidagency_full = '';
+						if($maid_added_by != ''){
+							$maidagency_full = get_user_by( 'ID', $maid_added_by );
+							$agency_name = $maidagency_full->first_name . ' ' . $maidagency_full->last_name;
+						}
+					?> 
+					<tr class="thisrow">
+					  <!--td><input type="checkbox" class="selectsinglemaid" name="selectsinglemaid[<?php echo $k; ?>]" type="checkbox" value="<?php echo $maid->ID; ?>" /></td-->
+					  <td><?php echo $maid_name; ?></td>
+					  <td><?php echo $agency_name; ?></td>
+					  <td class="thisapprove"><?php if($set_as_featured_by_admin == 'yes'){ echo 'Yes'; }else{ echo 'No'; } ?></td>
+					  <td>
+						<!--a href="edit.php?post_type=estate_property&page=jobs_templates&process=application_status_change&templateid=<?php echo $maid->ID; ?>"><?php if($set_as_featured_by_admin == 'yes'){ echo 'Disapprove'; }else{ echo 'Approve'; } ?></a-->
+						<a data-maidid="<?php echo $maid_id; ?>" class="change_status" href="javascript:void(0)"><?php if($set_as_featured_by_admin == 'yes'){ echo 'Disapprove'; }else{ echo 'Approve'; } ?></a>
+					  
+					  </td>
+					</tr>
+				<?php $k++; } } ?>
+			  </tbody>
+			</form>
+		  </table>
+		</div>
+	<?php 
+}
+//Featured maids Section in admin - end
+add_action( 'wp_ajax_change_featured_maid_status_admin', 'change_featured_maid_status_admin_callback' );
+add_action( 'wp_ajax_nopriv_change_featured_maid_status_admin', 'change_featured_maid_status_admin_callback' );
+function change_featured_maid_status_admin_callback(){
+	$maidid = $_POST['maidid'];
+	if($_POST['actionsent'] == 'Approve'){
+		update_user_meta($maidid,'is_featured','yes');
+		update_user_meta($maidid,'set_as_featured_by_admin','yes');
+		echo 'Approved';die;
+	}elseif($_POST['actionsent'] == 'Disapprove'){
+		update_user_meta($maidid,'is_featured','no');
+		update_user_meta($maidid,'set_as_featured_by_admin','no');
+		echo 'Disapproved';die;
+	}
+}
+
+function my_enqueue($hook) {
+    wp_enqueue_script('my_custom_script', get_template_directory_uri(__FILE__) . '/assets/js/jquery-3.3.1.min.js');
+    wp_enqueue_script('my_custom_script22', get_template_directory_uri(__FILE__) . '/assets/js/jquery-ui.js');
+    wp_enqueue_script('my_custom_script23', get_template_directory_uri(__FILE__) . '/assets/js/custom_code.js');
+    wp_enqueue_style('my_custom_css', get_template_directory_uri(__FILE__) . '/assets/css/jquery-ui.css');
+   
+}
+add_action('admin_enqueue_scripts', 'my_enqueue');
+?>
