@@ -1,0 +1,43 @@
+<?php
+// Database connection
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "test";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+if (isset($_POST['upload'])) {
+	
+    
+    if (isset($_FILES["uploadfile"]) && $_FILES["uploadfile"]["error"] === 0) {
+        $filename = basename($_FILES["uploadfile"]["name"]);
+        $tempname = $_FILES["uploadfile"]["tmp_name"];
+        $folder = "./image/" . $filename;
+
+      
+        $sql = "INSERT INTO image (filename) VALUES ('$filename')";
+
+      
+            if (move_uploaded_file($tempname, $folder)) {
+                echo "<h3>&nbsp; Image uploaded successfully!</h3>";
+            } else {
+                echo "<h3>&nbsp; Failed to move the uploaded image!</h3>";
+            }
+       
+    } else {
+        echo "<h3>&nbsp; No file selected or an error occurred during upload.</h3>";
+    }
+}
+?>
+
+<form action="" method="POST" enctype="multipart/form-data">
+    <input type="file" name="uploadfile" accept="image/*" required />
+    <button type="submit" name="upload">Upload</button>
+</form>
+
