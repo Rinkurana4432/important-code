@@ -8,21 +8,22 @@ $dbname = "test";
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+
 if (isset($_POST['upload'])) {
+	$allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        $file_type = mime_content_type($_FILES['uploadfile']['tmp_name']);
 	
     
-    if (isset($_FILES["uploadfile"]) && $_FILES["uploadfile"]["error"] === 0) {
-        $filename = basename($_FILES["uploadfile"]["name"]);
-        $tempname = $_FILES["uploadfile"]["tmp_name"];
-        $folder = "./image/" . $filename;
+    if (in_array($file_type, $allowed_types)) {
+        $original_filename = basename($_FILES['uploadfile']['name']); 
+        $tempname = $_FILES['uploadfile']['tmp_name']; 
+		$extension = pathinfo($original_filename, PATHINFO_EXTENSION);
+        $new_filename = "img_".rand(455,414) . '.' . $extension;
+        $folder = "./image/" . $new_filename;
 
       
-        $sql = "INSERT INTO image (filename) VALUES ('$filename')";
-
+        $sql = "INSERT INTO image (filename) VALUES ('$new_filename')";
+		$conn->query($sql);
       
             if (move_uploaded_file($tempname, $folder)) {
                 echo "<h3>&nbsp; Image uploaded successfully!</h3>";
@@ -37,7 +38,23 @@ if (isset($_POST['upload'])) {
 ?>
 
 <form action="" method="POST" enctype="multipart/form-data">
-    <input type="file" name="uploadfile" accept="image/*" required />
+    <input type="file" name="uploadfile"  required />
     <button type="submit" name="upload">Upload</button>
 </form>
+<?php
 
+
+
+ $selctdata = "select * from image";
+ $result = $conn->query($selctdata);
+ 
+ if(!empty($result)){
+	//$row = mysqli_fetch_array($result);
+ while ($row = mysqli_fetch_array($result)) {
+        echo "ID: " . $row['id'] . " - Filename: " . $row['filename'] . "<br>";
+        echo "<br>";
+    }
+	
+ }
+
+	
