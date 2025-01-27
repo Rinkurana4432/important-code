@@ -57,4 +57,193 @@ if (isset($_POST['upload'])) {
 	
  }
 
+=========================================================
+
+<?php
+include 'config.php';
+
+
+/*if(isset($_POST['submitww'])){
+	
+	
+	
+	$uploadpath = "upload/";
+	
+	$fileName = $_FILES['name']['name'];
+	$fileTempName = $_FILES['name']['tmp_name'];
+	$fileSize = $_FILES['name']['size'];
+	$fileerror = $_FILES['name']['error'];
+	
+	$fileExtension = strtolower(pathinfo($fileName,PATHINFO_EXTENSION));
+	
+	$allowedExtension = ['jpg','jpeg','png'];
+	
+	if(!in_array($fileExtension,$allowedExtension)){
+		echo 'File Extension Not Valid';
+	}else{
+		$imgname = rand(1000,25825).'.'.$fileExtension;
+		
+		
+		$sql = "INSERT INTO `newpp`(`name`, `phone`, `image`) VALUES ('".$_POST['name']."','".$_POST['phone']."','".$imgname."')";
+		
+		$conn->query($sql);
+		move_uploaded_file($fileTempName,$uploadpath.$imgname);
+		echo 'Data inserted Succssfully';
+		
+		
+		
+		
+	}	
+	
+
+	
+	
+	
+	
+	
+	
+}*/
+
+?>
+<script src="assets/jquery-3.7.1.js"></script>
+
+
+<form name="data" enctype="multipart/form-data" method="POST" id="formid">
+<table>
+	<span id="msg" style="color:green;"></span>
+	<tr>
+		<td>Name</td>
+		<td><input type="text" name="name" id="checkstring"></td>
+		<td><span class="error" style="color:red;"></span></td>
+	</tr>
+	<tr>	
+		<td>Phone</td>
+		<td><input type="text" name="phone" id="phnnumber" ></td>
+		<td><span class="errorphn" style="color:red;"></span></td>
+	</tr>
+	<!--tr>	
+		<td>Image</td>
+		<td><input type="file" name="name" ></td>
+	</tr-->		
+		<tr>
+			<td><input type="button" name="submit" value="Submit" id="sumbitform"></td>
+		</tr>
+	</tr>
+
+
+</table>
+</form>
+
+<?php 
+		$getdata = "Select * from newpp";
+		$result = $conn->query($getdata);
+		echo '<table border="1">';
+		echo '<tr>';
+		echo '<td>ID</td>';
+		echo '<td>Name</td>';
+		echo '<td>Phome</td>';
+		//echo '<td>Image</td>';
+		echo '<td>Action</td>';
+		echo '</tr>';
+		while ( $data = mysqli_fetch_array($result,true)){
+		
+		echo '<tr>';
+		echo '<td>'.$data['id'].'</td>';
+		echo '<td>'.$data['name'].'</td>';
+		echo '<td>'.$data['phone'].'</td>';
+		//echo '<td><img src=./upload/'.$data['image'].' style="width:100px;height:100px;""></td>';
+		echo '<td><a href="edit.php?menuid='.$data['id'].'">Edit</a></td>';
+		
+		
+		
+		echo '</tr>';
+		}
+
+echo '</table>';
+
+
+
+?>
+<script>
+
+$('#checkstring').on('blur',function(){
+	var regec = /^[a-zA-Z\s]*$/;
+	var inputval = $(this).val();
+	
+	if(!regec.test(inputval)){
+		$('.error').html('Please Add only Letters');
+		$(this).val('');
+	}else{
+		$('.error').html('');
+	}
+});
+
+$('#phnnumber').on('blur',function(){
+	var regec = /^[0-9]*$/;
+	var inputval = $(this).val();
+	
+	if(!regec.test(inputval)){
+		$('.errorphn').html('Please Add only Numbers');
+		$(this).val('');
+	}else{
+		$('.errorphn').html('');
+	}
+});
+
+$('#sumbitform').on ('click',function(){
+	
+	//var nameee = $('#checkstring').val();
+	
+
+	var regec1 = /^[0-9]*$/;
+	
+	var phonenumber = $('#phnnumber').val();
+	if(!regec1.test(phonenumber)){
+		$('.errorphn').html('Please Add only Numbers');
+		$(this).val('');
+		return false;
+	}else{
+		$('.errorphn').html('');
+	}
+
+	var nameee = $('#checkstring').val();
+    var regec = /^[a-zA-Z\s]*$/;
+	if(!regec.test(nameee)){
+		$('.error').html('Please Add only Letters');
+		$(this).val('');
+		return false;
+	}else{
+		$('.error').html('');
+	}
+	$.ajax({
+        url: "ajax.php",
+        type: "POST",
+        data: { name: nameee, phone: phonenumber },
+        success: function(res) {
+          $('#msg').html('Data inserted successfully');
+           $('#formid').trigger("reset"); 
+            setTimeout(function() {
+                $('#msg').fadeIn();
+                 location.reload();
+            }, 2000); 
+        },
+        error: function(res) {
+            alert('Error: ' + res.statusText);  // Provide more error details
+        }
+    });
+
+
+
+	
+	
+});
+
+</script>
+
+
+
+
+
+
+
 	
