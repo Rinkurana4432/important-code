@@ -241,6 +241,188 @@ $('#sumbitform').on ('click',function(){
 </script>
 
 
+/* using functions */
+
+<?php
+
+include 'functions.php'
+
+//
+
+
+if(isset($_POST['submit'])){
+
+	print_r($_POST);
+
+   createUser('John Doe', '9466740492');
+}
+
+
+?>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create User</title>
+</head>
+<body>
+    <form method="POST" enctype="multipart/form-data">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+        <label for="phone">Phone:</label>
+        <input type="text" id="phone" name="phone" required><br>
+        <button type="submit">Create User</button>
+    </form>
+</body>
+</html>
+
+
+/* with upload image*/
+
+
+<?php
+// Include the functions file
+include 'functions.php';
+
+// Check if form is submitted and a file is uploaded
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['file']) && isset($_POST['name']) && isset($_POST['phone'])) {
+    // Call the function to handle the file upload and insert data into the database
+    uploadFile($_FILES['file'], $_POST['name'], $_POST['phone']);
+}
+
+function uploadFile($file, $name, $phone) {
+    // Check if the file is uploaded correctly
+    if ($file['error'] === UPLOAD_ERR_OK) {
+        // Get file info
+        $fileName = $file['name'];
+        $fileTmpName = $file['tmp_name'];
+        $fileSize = $file['size'];
+        $fileType = $file['type'];
+
+        // Specify the target directory for uploaded images
+        $uploadDir = 'uploads/';
+        
+        // Create the directory if it doesn't exist
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // Generate a unique file name to avoid overwriting
+        $newFileName = time() . '_' . basename($fileName);
+        $targetFile = $uploadDir . $newFileName;
+
+        // Move the uploaded file to the target directory
+        if (move_uploaded_file($fileTmpName, $targetFile)) {
+            // If upload was successful, insert the name, phone, and file info into the database
+            saveFileToDatabase($name, $phone, $newFileName, $targetFile);
+        } else {
+            echo "Failed to upload the file.";
+        }
+    } else {
+        echo "Error uploading the file: " . $file['error'];
+    }
+}
+
+function saveFileToDatabase($name, $phone, $fileName) {
+    // Get the database connection
+    $conn = getDBConnection();
+
+    // Prepare the SQL statement
+    $stmt = $conn->prepare("INSERT INTO files (name, phone, image_name, image_path) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $name, $phone, $fileName, $filePath);  // "ssss" means four string parameters
+
+    // Execute the query and check if it was successful
+    if ($stmt->execute()) {
+        echo "File uploaded and data inserted successfully!";
+    } else {
+        echo "Error inserting data into the database: " . $stmt->error;
+    }
+
+    // Close the statement and connection
+    $stmt->close();
+    $conn->close();
+}
+?>
+
+/* Get users*/
+
+<?php
+// read.php - Fetch all users
+include 'db.php';
+
+function getUsers() {
+    $conn = getDBConnection();
+    $sql = "SELECT * FROM users";
+    $result = $conn->query($sql);
+    
+    if ($result->num_rows > 0) {
+        while ($user = $result->fetch_assoc()) {
+            echo "ID: " . $user['id'] . " | Name: " . $user['name'] . " | Email: " . $user['email'] . "<br>";
+        }
+    } else {
+        echo "No records found.";
+    }
+
+    $conn->close();
+}
+
+getUsers();
+?>
+/* update users*/
+
+<?php
+// update.php - Update a user's details
+include 'db.php';
+
+function updateUser($id, $name, $email) {
+    $conn = getDBConnection();
+    $stmt = $conn->prepare("UPDATE users SET name = ?, email = ? WHERE id = ?");
+    $stmt->bind_param("ssi", $name, $email, $id);  // "ssi" means string, string, integer
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        echo "User updated successfully!";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+
+    $stmt->close();
+    $conn->close();
+}
+
+updateUser(1, 'Jane Doe', 'jane.doe@example.com');
+?>
+/* delte users*/
+
+<?php
+// delete.php - Delete a user
+include 'db.php';
+
+function deleteUser($id) {
+    $conn = getDBConnection();
+    $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+    $stmt->bind_param("i", $id);  // "i" means integer
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        echo "User deleted successfully!";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+
+    $stmt->close();
+    $conn->close();
+}
+
+deleteUser(1);
+?>
+
+
+
+
 
 
 
